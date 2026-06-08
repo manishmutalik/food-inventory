@@ -1,0 +1,202 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //
+    // Collection: users/{userId}/materials
+    // Document ID: materialId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required, 1-100 chars)
+    //   - unit: string (required, enum: g, kg, ml, l, pcs)
+    //   - initialStock: number (required, >= 0)
+    //   - costPerUnit: number (required, >= 0)
+    //   - category: string (required, 1-50 chars)
+    //   - threshold: number (optional, 0-100)
+    //   - dateAdded: string (required, ISO 8601 date)
+    //
+    // Collection: users/{userId}/menu
+    // Document ID: menuItemId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required, 1-100 chars)
+    //   - sellingPrice: number (required, >= 0)
+    //   - recipe: list (required, max 50 items)
+    //     - materialId: string
+    //     - amount: number
+    //     - unit: string
+    //
+    // Collection: users/{userId}/orders
+    // Document ID: orderId
+    // Fields:
+    //   - id: string (required)
+    //   - menuItemId: string (required)
+    //   - quantity: number (required, > 0)
+    //   - date: string (required, ISO 8601 date)
+    //
+    // Collection: users/{userId}/settings
+    // Document ID: bakery
+    // Fields:
+    //   - name: string (optional)
+    //   - logo: string (optional, URL)
+    //   - primaryColor: string (optional, hex)
+    //   - address: string (optional)
+    //   - phone: string (optional)
+    //   - email: string (optional, email format)
+    //   - categories: list (optional, max 20 items)
+    //   - currency: map (optional)
+    //     - code: string
+    //     - symbol: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "manishmutalik@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role']) &&
+             data.uid == request.auth.uid &&
+             (data.email == '' || isValidEmail(data.email));
+    }
+
+    function isValidMaterial(data) {
+      // Allow partial updates by making all field checks optional
+      // request.resource.data is the merged document after update
+      return (!('id' in data) || data.id is string) && 
+             (!('name' in data) || (data.name is string && data.name.size() > 0 && data.name.size() <= 100)) &&
+             (!('unit' in data) || data.unit in ['g', 'kg', 'ml', 'l', 'pcs']) &&
+             (!('initialStock' in data) || (data.initialStock is number && data.initialStock >= 0)) &&
+             (!('costPerUnit' in data) || (data.costPerUnit is number && data.costPerUnit >= 0)) &&
+             (!('category' in data) || (data.category is string && data.category.size() > 0 && data.category.size() <= 50)) &&
+             (!('threshold' in data) || (data.threshold is number && data.threshold >= 0 && data.threshold <= 100)) &&
+             (!('dateAdded' in data) || isValidDateString(data.dateAdded));
+    }
+
+    function isValidMenuItem(data) {
+      return hasOnlyAllowedFields(['id', 'name', 'sellingPrice', 'recipe']) &&
+             data.id is string && data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.sellingPrice is number && data.sellingPrice >= 0 &&
+             data.recipe is list && data.recipe.size() <= 50;
+    }
+
+    function isValidOrder(data) {
+      return hasOnlyAllowedFields(['id', 'menuItemId', 'quantity', 'date']) &&
+             data.id is string && data.menuItemId is string &&
+             data.quantity is number && data.quantity > 0 &&
+             isValidDateString(data.date);
+    }
+
+    function isValidExperiment(data) {
+      return hasOnlyAllowedFields(['id', 'name', 'date', 'materials', 'notes']) &&
+             data.id is string && data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             isValidDateString(data.date) &&
+             data.materials is list && data.materials.size() <= 50 &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 500));
+    }
+
+    function isValidSettings(data) {
+      return hasOnlyAllowedFields(['name', 'logo', 'primaryColor', 'address', 'phone', 'email', 'categories', 'currency']) &&
+             (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
+             (!('primaryColor' in data) || (data.primaryColor is string && data.primaryColor.size() <= 20)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 200)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 30)) &&
+             (!('email' in data) || (data.email == '' || isValidEmail(data.email))) &&
+             (!('logo' in data) || (data.logo == '' || isValidUrl(data.logo))) &&
+             (!('categories' in data) || (data.categories is list && data.categories.size() <= 20));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (!('role' in request.resource.data) || request.resource.data.role == 'user');
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+
+      match /materials/{materialId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidMaterial(request.resource.data);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidMaterial(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /menu/{menuItemId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidMenuItem(request.resource.data);
+        allow update: if isOwner(userId) && isValidMenuItem(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /orders/{orderId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidOrder(request.resource.data);
+        allow update: if isOwner(userId) && isValidOrder(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /experiments/{experimentId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidExperiment(request.resource.data);
+        allow update: if isOwner(userId) && isValidExperiment(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /settings/bakery {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidSettings(request.resource.data);
+      }
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
