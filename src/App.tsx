@@ -50,8 +50,11 @@ import {
   LogIn,
   FlaskConical,
   Sparkles,
-  Factory
+  Factory,
+  Download,
+  Upload
 } from 'lucide-react';
+import Papa from 'papaparse';
 import { IngredientSelectorModal } from './components/IngredientSelectorModal';
 import { ProductionRunModal, ProductionRun, ProductionPurpose } from './components/ProductionRunModal';
 import { motion, AnimatePresence } from 'motion/react';
@@ -1453,6 +1456,69 @@ function BakeryApp() {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const csvContent = "Name,Unit,Initial Stock,Cost,Threshold\nFlour,kg,100,2.5,20\nSugar,kg,50,1.2,10";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Bakery_RawMaterials_Template.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>, targetCategory: string) => {
+    const file = e.target.files?.[0];
+    if (!file || !auth.currentUser) return;
+    const userId = auth.currentUser.uid;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const batch = writeBatch(db);
+          let count = 0;
+
+          results.data.forEach((row: any) => {
+            const name = row['Name']?.trim();
+            if (!name) return; // Skip invalid rows
+
+            const id = Math.random().toString(36).substr(2, 9);
+            const newMat: RawMaterial = {
+              id,
+              name,
+              unit: row['Unit']?.trim() || 'g',
+              initialStock: parseFloat(row['Initial Stock']) || 0,
+              costPerUnit: parseFloat(row['Cost']) || 0,
+              category: targetCategory,
+              threshold: parseFloat(row['Threshold']) || 0,
+              dateAdded: new Date().toISOString().split('T')[0]
+            };
+
+            const docRef = doc(db, 'users', userId, 'materials', id);
+            batch.set(docRef, newMat);
+            count++;
+          });
+
+          if (count > 0) {
+            await batch.commit();
+            showAlert('Success', `Imported ${count} items from CSV.`);
+          } else {
+            showAlert('Warning', 'No valid items found in the CSV. Make sure you have a "Name" column.');
+          }
+        } catch (err: any) {
+          showAlert('Error', `Failed to import CSV: ${err.message}`);
+        }
+        
+        // Reset file input
+        e.target.value = '';
+      }
+    });
+  };
+
   /**
    * Adds a new named category to the local list and persists it to Firestore.
    * Skips blank strings and duplicates (case-sensitive).
@@ -2784,13 +2850,33 @@ function BakeryApp() {
                       <h2 className="text-2xl font-sans font-bold text-stone-800">{category}</h2>
                       <p className="text-stone-500 text-sm font-sans italic">Track stock levels and costs for {category.toLowerCase()}.</p>
                     </div>
-                    <button 
-                      onClick={() => addMaterial(category)}
-                      className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
-                    >
-                      <Plus size={18} />
-                      Add {category} Item
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleDownloadTemplate()}
+                        className="hidden md:flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm"
+                        title="Download CSV Template"
+                      >
+                        <Download size={16} />
+                        Template
+                      </button>
+                      <label className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 transform active:scale-95 cursor-pointer">
+                        <Upload size={16} />
+                        <span className="hidden sm:inline">Import CSV</span>
+                        <input 
+                          type="file" 
+                          accept=".csv" 
+                          className="hidden" 
+                          onChange={(e) => handleImportCSV(e, category)} 
+                        />
+                      </label>
+                      <button 
+                        onClick={() => addMaterial(category)}
+                        className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
+                      >
+                        <Plus size={18} />
+                        <span className="hidden sm:inline">Add Item</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
