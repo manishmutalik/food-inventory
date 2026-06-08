@@ -2682,19 +2682,19 @@ function BakeryApp() {
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               {settings.logo ? (
-                <div className="relative group">
-                  <img src={settings.logo} alt="Logo" className="w-12 h-12 rounded-2xl object-cover border-2 border-stone-100 shadow-sm transition-transform group-hover:scale-105" />
+                <div className="relative group shrink-0">
+                  <img src={settings.logo} alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-stone-100 shadow-sm transition-transform group-hover:scale-105" />
                   <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/5" />
                 </div>
               ) : (
-                <div className="bg-primary p-3 rounded-2xl text-white shadow-lg shadow-primary/20">
-                  <Utensils size={28} />
+                <div className="bg-primary p-2 sm:p-3 rounded-2xl text-white shadow-lg shadow-primary/20 shrink-0">
+                  <Utensils size={24} className="sm:w-[28px] sm:h-[28px]" />
                 </div>
               )}
-              <div>
-                <h1 className="text-xl font-sans font-bold tracking-tight text-stone-900 leading-tight">{settings.name || 'Bakery Tracker'}</h1>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-sans font-bold tracking-tight text-stone-900 leading-tight truncate">{settings.name || 'Bakery Tracker'}</h1>
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Live Dashboard</span>
@@ -2702,10 +2702,10 @@ function BakeryApp() {
               </div>
             </div>
             
-            <div className="flex items-center gap-6">
-              <div className="hidden lg:flex items-center gap-4">
-                <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-xl px-3 py-1.5">
-                  <Globe size={14} className="text-stone-400" />
+            <div className="flex items-center gap-2 sm:gap-6 min-w-0 shrink">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="flex items-center gap-1 sm:gap-2 bg-stone-50 border border-stone-200 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 shrink-0">
+                  <Globe size={14} className="text-stone-400 hidden sm:block" />
                   <select 
                     value={currency.code}
                     onChange={(e) => {
@@ -2724,23 +2724,23 @@ function BakeryApp() {
               {lowStockItems.length > 0 && (
                 <button 
                   onClick={() => setActiveTab('inventory')}
-                  className="relative p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group"
+                  className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group shrink-0"
                   title={`${lowStockItems.length} items low on stock`}
                 >
-                  <AlertCircle size={22} className="group-hover:scale-110 transition-transform" />
-                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                  <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
+                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                     {lowStockItems.length}
                   </span>
                 </button>
               )}
               
-              <div className="flex items-center gap-3 pl-6 border-l border-stone-200">
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-6 border-l border-stone-200 shrink-0">
                 <div className="text-right hidden sm:block">
                   <div className="text-sm font-bold text-stone-800 leading-none mb-1 font-sans">{user?.name}</div>
                   <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{user?.email}</div>
                 </div>
                 <div className="relative group">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shadow-sm">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shadow-sm">
                     {user?.name?.charAt(0) || 'B'}
                   </div>
                   <button 
