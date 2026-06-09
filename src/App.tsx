@@ -1317,7 +1317,7 @@ function BakeryApp() {
 
     const expenses = orderExpenses + experimentExpenses;
 
-    return { income, expenses, orderExpenses, experimentExpenses, profit: income - expenses };
+    return { income, expenses, orderExpenses, experimentExpenses, profit: income - orderExpenses };
   };
 
   // Round-to-2-decimal wrapper around `getFinancialsForRange` for the summary period.
@@ -2885,7 +2885,7 @@ function BakeryApp() {
                         <tr className="bg-stone-50/50 border-b border-stone-100">
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Material Name</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Unit</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Morning Stock</th>
+                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Current Stock</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Threshold</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Cost / Unit</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest w-20"></th>
@@ -3433,7 +3433,7 @@ function BakeryApp() {
                       }`}
                     >
                       {showSaveFeedback ? <CheckCircle2 size={18} /> : <Save size={18} />}
-                      {showSaveFeedback ? 'Saved!' : 'Save Day'}
+                      {showSaveFeedback ? 'Saved!' : 'Auto-saved'}
                     </button>
                   </div>
 
@@ -3482,14 +3482,16 @@ function BakeryApp() {
               <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
                 <div className="p-8 space-y-4">
                   <div className="grid grid-cols-12 gap-4 px-4 pb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                    <div className="col-span-7">Item Sold</div>
-                    <div className="col-span-3">Quantity</div>
-                    <div className="col-span-2 text-right">Actions</div>
+                    <div className="col-span-4">Item Sold</div>
+                    <div className="col-span-2">Qty</div>
+                    <div className="col-span-3">Customer</div>
+                    <div className="col-span-2">Phone</div>
+                    <div className="col-span-1 text-right">Del</div>
                   </div>
                   <div className="space-y-3">
                     {orders.filter(o => o.date === orderDate).map((order) => (
                       <div key={order.id} className="grid grid-cols-12 items-center gap-4 p-4 bg-stone-50/50 rounded-2xl border border-stone-100 transition-all hover:border-primary/20 group">
-                        <div className="col-span-7">
+                        <div className="col-span-4">
                           <select 
                             value={order.menuItemId || ''}
                             onChange={(e) => updateOrder(order.id, 'menuItemId', e.target.value)}
@@ -3501,7 +3503,7 @@ function BakeryApp() {
                             ))}
                           </select>
                         </div>
-                        <div className="col-span-3">
+                        <div className="col-span-2">
                           <input 
                             type="number" 
                             value={order.quantity ?? 0}
@@ -3510,10 +3512,29 @@ function BakeryApp() {
                             className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
                           />
                         </div>
-                        <div className="col-span-2 text-right">
+                        <div className="col-span-3">
+                          <input 
+                            type="text" 
+                            placeholder="Name"
+                            value={order.customerName || ''}
+                            onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <input 
+                            type="text" 
+                            placeholder="Phone"
+                            value={order.customerPhone || ''}
+                            onChange={(e) => updateOrder(order.id, 'customerPhone', e.target.value)}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                          />
+                        </div>
+                        <div className="col-span-1 text-right flex justify-end">
                           <button 
                             onClick={() => deleteOrder(order.id)}
                             className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
+                            title="Delete Order"
                           >
                             <Trash2 size={20} />
                           </button>
@@ -4658,10 +4679,10 @@ function BakeryApp() {
                   <div className="text-[10px] text-stone-400 mt-2 uppercase font-bold tracking-wider">From {filteredOrders.reduce((acc, o) => acc + o.quantity, 0)} items sold</div>
                 </div>
                 <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm group hover:shadow-md transition-all">
-                  <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Order Expenses</div>
-                  <div className="text-4xl font-sans font-bold text-rose-600">{currency.symbol}{financials.expenses.toFixed(2)}</div>
+                  <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Cost of Goods Sold</div>
+                  <div className="text-4xl font-sans font-bold text-rose-600">{currency.symbol}{financials.orderExpenses.toFixed(2)}</div>
                   <div className="text-[10px] text-stone-400 mt-2 uppercase font-bold tracking-wider">
-                    {currency.symbol}{financials.orderExpenses.toFixed(2)} Orders + {currency.symbol}{financials.experimentExpenses.toFixed(2)} R&amp;D
+                    Cost of fulfilled orders
                   </div>
                 </div>
                 <div className="bg-amber-50 p-8 rounded-[2rem] border border-amber-100 shadow-sm group hover:shadow-md transition-all">
@@ -4675,9 +4696,10 @@ function BakeryApp() {
                 </div>
                 <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/20 shadow-lg shadow-primary/5 group hover:shadow-primary/10 transition-all">
                   <div className="text-primary/60 text-[10px] font-bold uppercase tracking-widest mb-3">Net Profit</div>
-                  <div className="text-4xl font-sans font-bold text-primary">{currency.symbol}{financials.profit}</div>
+                  <div className="text-4xl font-sans font-bold text-primary">{currency.symbol}{financials.profit.toFixed(2)}</div>
                   <div className="text-[10px] text-primary/40 mt-2 uppercase font-bold tracking-wider">
                     {financials.income > 0 ? `${((financials.profit / financials.income) * 100).toFixed(1)}% margin` : 'No sales yet'}
+                    {financials.experimentExpenses > 0 && <span className="block mt-1">Operating Exp: {currency.symbol}{financials.experimentExpenses.toFixed(2)} R&amp;D</span>}
                   </div>
                 </div>
               </div>
