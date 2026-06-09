@@ -554,15 +554,6 @@ function BakeryApp() {
   // Subscribes to Firebase Auth state changes. Sets `user` and `isAuthReady`
   // so the rest of the app knows whether Firestore listeners can safely attach.
   useEffect(() => {
-    // PREMORTEM BYPASS
-    setUser({
-      email: "demo@bakery.app",
-      name: "Demo User"
-    });
-    setIsAuthReady(true);
-    
-    // Disable real auth listener during premortem
-    /*
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser({
@@ -575,7 +566,6 @@ function BakeryApp() {
       setIsAuthReady(true);
     });
     return () => unsubscribe();
-    */
   }, []);
 
   /**

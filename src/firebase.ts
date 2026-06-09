@@ -47,24 +47,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 /** Firebase Auth instance — manages user sessions. */
-const _auth = getAuth(app);
-export const auth = new Proxy(_auth, {
-  get(target, prop) {
-    if (prop === 'currentUser') {
-      return target.currentUser || {
-        uid: "premortem-demo-user",
-        email: "demo@bakery.app",
-        displayName: "Demo User",
-        emailVerified: true,
-        isAnonymous: false,
-        providerData: []
-      };
-    }
-    // Bind functions to the original _auth object so they don't lose context
-    const value = Reflect.get(target, prop);
-    return typeof value === 'function' ? value.bind(target) : value;
-  }
-});
+export const auth = getAuth(app);
 
 /** Pre-configured Google OAuth provider used for one-click sign-in. */
 export const googleProvider = new GoogleAuthProvider();
