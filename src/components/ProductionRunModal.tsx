@@ -102,6 +102,7 @@ export function ProductionRunModal({ isOpen, onClose, menu, materials, onSave, c
   const [yieldQty,   setYieldQty]   = useState<number | ''>('');
   const [notes,      setNotes]      = useState('');
   const [isSaving,   setIsSaving]   = useState(false);
+  const [error,      setError]      = useState('');
 
   // ─── Derived Values ─────────────────────────────────────────────────────────
   const selectedRecipe = menu.find(m => m.id === recipeId);
@@ -130,8 +131,16 @@ export function ProductionRunModal({ isOpen, onClose, menu, materials, onSave, c
    * Flow: validate → call `onSave` → reset state → close modal.
    * On failure the modal stays open so the user can retry.
    */
-  const handleSave = async () => {
-    if (!recipeId || quantity < 1) return; // guard: nothing to save
+   const handleSave = async () => {
+    setError('');
+    if (!recipeId) {
+      setError('Please select a recipe before logging.');
+      return;
+    }
+    if (quantity < 1) {
+      setError('Quantity must be at least 1.');
+      return;
+    }
     setIsSaving(true);
     try {
       // Use the explicit yield quantity only when the yield section is visible and filled in;
@@ -147,6 +156,7 @@ export function ProductionRunModal({ isOpen, onClose, menu, materials, onSave, c
         costTotal: parseFloat(costTotal.toFixed(2)), // snapshot rounded to 2 dp
       });
       // Reset form on success so the modal is blank for the next run
+      setRecipeId('');
       setQuantity(1);
       setDate(today);
       setPurpose('market_stock');
@@ -189,9 +199,13 @@ export function ProductionRunModal({ isOpen, onClose, menu, materials, onSave, c
             <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5 block">Recipe</label>
             <select
               value={recipeId}
-              onChange={e => setRecipeId(e.target.value)}
-              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-stone-700 outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all"
+              onChange={e => {
+                setRecipeId(e.target.value);
+                setError('');
+              }}
+              className={`w-full bg-stone-50 border rounded-xl px-4 py-3 text-sm font-bold text-stone-700 outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all ${error && !recipeId ? 'border-rose-400' : 'border-stone-200'}`}
             >
+              <option value="" disabled>Select a recipe...</option>
               {menu.map(item => (
                 <option key={item.id} value={item.id}>{item.name}</option>
               ))}
@@ -314,13 +328,16 @@ export function ProductionRunModal({ isOpen, onClose, menu, materials, onSave, c
           >
             Cancel
           </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving || quantity < 1 || !recipeId}
-            className="flex-1 py-3 rounded-2xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-amber-200"
-          >
-            {isSaving ? 'Logging...' : 'Log Run'}
-          </button>
+          <div className="flex flex-col flex-1">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full py-3 rounded-2xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-amber-200"
+            >
+              {isSaving ? 'Logging...' : 'Log Run'}
+            </button>
+            {error && <div className="text-rose-500 text-[10px] font-bold mt-1 text-center">{error}</div>}
+          </div>
         </div>
       </div>
     </div>

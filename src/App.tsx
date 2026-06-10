@@ -1792,7 +1792,7 @@ function BakeryApp() {
     const newExp: RecipeExperiment = {
       id,
       name: 'New Experiment',
-      date: orderDate,
+      date: new Date().toISOString().split('T')[0],
       materials: []
     };
     try {
@@ -2623,15 +2623,17 @@ function BakeryApp() {
       
       {/* Desktop Right Sidebar */}
       <aside className="hidden md:flex flex-col w-64 lg:w-72 border-l border-stone-200/50 bg-white/80 backdrop-blur-md sticky top-0 h-screen overflow-y-auto shrink-0 shadow-[-4px_0_24px_rgba(0,0,0,0.02)] pt-6 z-40">
-        <div className="px-6 mb-8">
-          <button 
-            onClick={() => setIsProductionRunModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-2xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 font-bold"
-          >
-            <Factory size={20} />
-            New Production Run
-          </button>
-        </div>
+        {menu.length > 0 && (activeTab === 'summary' || activeTab === 'production') && (
+          <div className="px-6 mb-8">
+            <button 
+              onClick={() => setIsProductionRunModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-2xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 font-bold"
+            >
+              <Factory size={20} />
+              New Production Run
+            </button>
+          </div>
+        )}
         
         <div className="px-4 flex-1">
           <h2 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-2 mb-3">Menu</h2>
@@ -2789,7 +2791,7 @@ function BakeryApp() {
                           </div>
                         </div>
                         <div className="mt-3 pt-3 border-t border-rose-100 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-rose-400">
-                          <span>Threshold: {item.threshold}%</span>
+                          <span>Threshold: {item.threshold} {item.unit}</span>
                           <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full">Low Stock</span>
                         </div>
                       </div>
@@ -2886,14 +2888,14 @@ function BakeryApp() {
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Material Name</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Unit</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Current Stock</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Threshold</th>
+                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest" title="Alert when current stock drops below this amount">Threshold (Alert)</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Cost / Unit</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest w-20"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-50">
                         {sortedRemainingInventory.filter(m => m.category === category).map((mat) => {
-                          const isLowStock = mat.remaining <= ((mat.initialStock * (mat.threshold || 0)) / 100);
+                          const isLowStock = mat.remaining <= (mat.threshold || 0);
                           
                           return (
                             <tr key={mat.id} className={`hover:bg-stone-50/30 transition-colors ${isLowStock ? 'bg-rose-50/20' : ''}`}>
@@ -2935,10 +2937,11 @@ function BakeryApp() {
                                     type="number" 
                                     value={mat.threshold ?? 0}
                                     onChange={(e) => updateMaterial(mat.id, 'threshold', parseFloat(e.target.value) || 0)}
-                                    className={`w-16 border rounded-xl px-2 py-1.5 text-sm font-mono focus:ring-2 outline-none text-right transition-all ${isLowStock ? 'bg-rose-50/50 border-rose-100 focus:ring-rose-500' : 'bg-stone-50/50 border-stone-100 focus:ring-primary/20'}`}
-                                    placeholder="20"
+                                    className={`w-20 border rounded-xl px-2 py-1.5 text-sm font-mono focus:ring-2 outline-none text-right transition-all ${isLowStock ? 'bg-rose-50/50 border-rose-100 focus:ring-rose-500' : 'bg-stone-50/50 border-stone-100 focus:ring-primary/20'}`}
+                                    placeholder="5"
+                                    title={`Alert when stock drops below this amount of ${mat.unit}`}
                                   />
-                                  <span className="text-stone-400 text-[10px] font-bold">%</span>
+                                  <span className="text-stone-400 text-[10px] font-bold">{mat.unit}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4">
@@ -2957,10 +2960,11 @@ function BakeryApp() {
                                 <div className="flex items-center justify-end gap-2">
                                   <button 
                                     onClick={() => setRestockMaterial(mat)}
-                                    className="text-emerald-500 hover:text-emerald-600 transition-colors p-2 hover:bg-emerald-50 rounded-xl"
-                                    title="Restock Material"
+                                    className="flex items-center gap-1 text-emerald-500 hover:text-emerald-600 transition-colors px-2 py-1.5 hover:bg-emerald-50 rounded-xl text-[10px] font-bold uppercase tracking-wider"
+                                    title="Restock this item"
                                   >
-                                    <Plus size={18} />
+                                    <Plus size={16} />
+                                    <span className="hidden sm:inline">Restock</span>
                                   </button>
                                   <button 
                                     onClick={() => deleteMaterial(mat.id)}
@@ -3090,7 +3094,7 @@ function BakeryApp() {
                                     Cost: {currency.symbol}{cost.toFixed(2)}
                                   </span>
                                   <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${margin >= 60 ? 'bg-emerald-50 text-emerald-600' : margin >= 40 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'}`}>
-                                    {margin.toFixed(0)}% Margin
+                                    {item.sellingPrice < cost ? `LOSS (${margin.toFixed(0)}%)` : `${margin.toFixed(0)}% Margin`}
                                   </span>
                                 </>
                               );
@@ -4324,37 +4328,6 @@ function BakeryApp() {
                   <p className="text-stone-500 text-sm italic font-sans">Log your daily experiments and track material usage.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-                  <div className="flex items-center gap-2 bg-white border border-stone-200/50 rounded-2xl p-1.5 shadow-sm">
-                    <button 
-                      onClick={() => {
-                        const d = new Date(orderDate);
-                        d.setDate(d.getDate() - 1);
-                        setOrderDate(d.toISOString().split('T')[0]);
-                      }}
-                      className="p-2 text-stone-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
-                    >
-                      <ArrowLeft size={18} />
-                    </button>
-                    <div className="flex items-center gap-3 px-3 border-x border-stone-100">
-                      <Calendar size={16} className="text-primary" />
-                      <input 
-                        type="date" 
-                        value={orderDate}
-                        onChange={(e) => setOrderDate(e.target.value)}
-                        className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer"
-                      />
-                    </div>
-                    <button 
-                      onClick={() => {
-                        const d = new Date(orderDate);
-                        d.setDate(d.getDate() + 1);
-                        setOrderDate(d.toISOString().split('T')[0]);
-                      }}
-                      className="p-2 text-stone-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
-                    >
-                      <ArrowRight size={18} />
-                    </button>
-                  </div>
                   
                   <button 
                     onClick={addExperiment}
@@ -4367,7 +4340,7 @@ function BakeryApp() {
               </div>
 
               <div className="grid grid-cols-1 gap-6">
-                {experiments.filter(e => e.date === orderDate).map((exp) => (
+                {[...experiments].sort((a,b) => b.date.localeCompare(a.date)).map((exp) => (
                   <div key={exp.id} className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden p-8 space-y-6">
                     <div className="flex justify-between items-start">
                       <div className="flex-1 max-w-md">
@@ -4980,14 +4953,16 @@ function BakeryApp() {
       {/* Mobile Bottom Navigation & Floating Action */}
       <div className="md:hidden">
         {/* Floating Action Button - Positioned above the nav */}
-        <div className="fixed bottom-24 right-4 z-50">
-          <button 
-            onClick={() => setIsProductionRunModalOpen(true)}
-            className="w-14 h-14 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30 transition-transform active:scale-95 border-2 border-white"
-          >
-            <Factory size={24} />
-          </button>
-        </div>
+        {menu.length > 0 && (activeTab === 'summary' || activeTab === 'production') && (
+          <div className="fixed bottom-24 right-4 z-50">
+            <button 
+              onClick={() => setIsProductionRunModalOpen(true)}
+              className="w-14 h-14 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30 transition-transform active:scale-95 border-2 border-white"
+            >
+              <Factory size={24} />
+            </button>
+          </div>
+        )}
 
         {/* Scrollable Bottom Nav */}
         <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200/50 z-50 flex overflow-x-auto no-scrollbar items-center pb-safe pt-1 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] px-2">
