@@ -52,7 +52,8 @@ import {
   Sparkles,
   Factory,
   Download,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
 import Papa from 'papaparse';
 import { IngredientSelectorModal } from './components/IngredientSelectorModal';
@@ -471,6 +472,19 @@ function BakeryApp() {
   const [summaryDateStart, setSummaryDateStart] = useState(new Date().toISOString().split('T')[0]);
   const [summaryDateEnd, setSummaryDateEnd] = useState(new Date().toISOString().split('T')[0]);
   const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
+  // Orders tab date-range filter (defaults to last 7 days)
+  const [orderFilterStart, setOrderFilterStart] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() - 6); return d.toISOString().split('T')[0];
+  });
+  const [orderFilterEnd, setOrderFilterEnd] = useState(new Date().toISOString().split('T')[0]);
+  // Add Order modal state
+  const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
+  interface OrderLineItem { menuItemId: string; quantity: number; }
+  const [modalOrderDate, setModalOrderDate] = useState(new Date().toISOString().split('T')[0]);
+  const [modalCustomerName, setModalCustomerName] = useState('');
+  const [modalCustomerPhone, setModalCustomerPhone] = useState('');
+  const [modalLineItems, setModalLineItems] = useState<OrderLineItem[]>([{ menuItemId: '', quantity: 1 }]);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [summaryRefDate, setSummaryRefDate] = useState(new Date().toISOString().split('T')[0]);
   const [expandedRecipeId, setExpandedRecipeId] = useState<string | null>(null);
   const [inventorySortBy, setInventorySortBy] = useState<'name' | 'stock' | 'cost' | 'date'>('name');
@@ -3599,190 +3613,427 @@ function BakeryApp() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-8 pb-20"
             >
+              {/* Header */}
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
                 <div>
                   <h2 className="text-3xl font-sans font-bold text-stone-800">Order History</h2>
-                  <p className="text-stone-500 text-sm italic font-sans">Log items sold by date to calculate usage.</p>
+                  <p className="text-stone-500 text-sm italic font-sans">Browse and manage all customer orders by date range.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-                  <div className="flex items-center gap-2 bg-white border border-stone-200/50 rounded-2xl p-1.5 shadow-sm">
-                    <button 
-                      onClick={() => {
-                        const d = new Date(orderDate);
-                        d.setDate(d.getDate() - 1);
-                        setOrderDate(d.toISOString().split('T')[0]);
-                      }}
-                      className="p-2 text-stone-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
-                    >
-                      <ArrowLeft size={18} />
-                    </button>
-                    <div className="flex items-center gap-3 px-3 border-x border-stone-100">
-                      <Calendar size={16} className="text-primary" />
-                      <input 
-                        type="date" 
-                        value={orderDate}
-                        onChange={(e) => setOrderDate(e.target.value)}
-                        className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer"
-                      />
-                    </div>
-                    <button 
-                      onClick={() => {
-                        const d = new Date(orderDate);
-                        d.setDate(d.getDate() + 1);
-                        setOrderDate(d.toISOString().split('T')[0]);
-                      }}
-                      className="p-2 text-stone-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
-                    >
-                      <ArrowRight size={18} />
-                    </button>
+                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                  {/* Date range pickers */}
+                  <div className="flex items-center gap-2 bg-white border border-stone-200/50 rounded-2xl px-4 py-2 shadow-sm">
+                    <Calendar size={15} className="text-primary shrink-0" />
+                    <input
+                      type="date"
+                      value={orderFilterStart}
+                      onChange={(e) => setOrderFilterStart(e.target.value)}
+                      className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer w-32"
+                    />
+                    <span className="text-stone-300 font-bold text-xs">→</span>
+                    <input
+                      type="date"
+                      value={orderFilterEnd}
+                      onChange={(e) => setOrderFilterEnd(e.target.value)}
+                      className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer w-32"
+                    />
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={resetOrders}
-                      className="flex items-center gap-2 text-stone-500 hover:text-stone-800 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-stone-100"
-                    >
-                      <RotateCcw size={18} />
-                      Today
-                    </button>
-                    <button 
-                      onClick={saveDay}
+
+                  {/* Quick range shortcuts */}
+                  <div className="flex items-center gap-1.5">
+                    {[
+                      { label: 'Today', days: 0 },
+                      { label: '7 Days', days: 6 },
+                      { label: '30 Days', days: 29 },
+                    ].map(({ label, days }) => (
+                      <button
+                        key={label}
+                        onClick={() => {
+                          const end = new Date();
+                          const start = new Date();
+                          start.setDate(end.getDate() - days);
+                          setOrderFilterStart(start.toISOString().split('T')[0]);
+                          setOrderFilterEnd(end.toISOString().split('T')[0]);
+                        }}
+                        className="px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-stone-100 hover:bg-stone-200 text-stone-600 transition-colors"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="h-8 w-px bg-stone-200 hidden lg:block" />
+
+                  {/* Add Order Button */}
+                  <button
+                    onClick={() => {
+                      setModalOrderDate(new Date().toISOString().split('T')[0]);
+                      setModalCustomerName('');
+                      setModalCustomerPhone('');
+                      setModalLineItems([{ menuItemId: menu[0]?.id || '', quantity: 1 }]);
+                      setIsAddOrderModalOpen(true);
+                    }}
+                    disabled={menu.length === 0}
+                    className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95 disabled:opacity-50"
+                  >
+                    <Plus size={18} />
+                    Add Order
+                  </button>
+
+                  {shopifyStatus.connected && (
+                    <button
+                      onClick={importShopifyOrders}
+                      disabled={isImportingShopify}
                       className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg transform active:scale-95 ${
-                        showSaveFeedback 
-                          ? 'bg-emerald-500 text-white shadow-emerald-200' 
+                        isImportingShopify
+                          ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
+                          : 'bg-primary hover:bg-primary-dark text-white shadow-primary/20'
+                      }`}
+                    >
+                      <Globe size={18} className={isImportingShopify ? 'animate-spin' : ''} />
+                      {isImportingShopify ? 'Importing...' : 'Shopify Import'}
+                    </button>
+                  )}
+                  {odooStatus.connected && (
+                    <button
+                      onClick={importOdooOrders}
+                      disabled={isImportingOdoo}
+                      className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg transform active:scale-95 ${
+                        isImportingOdoo
+                          ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
                           : 'bg-stone-800 hover:bg-stone-900 text-white shadow-stone-200'
                       }`}
                     >
-                      {showSaveFeedback ? <CheckCircle2 size={18} /> : <Save size={18} />}
-                      {showSaveFeedback ? 'Saved!' : 'Auto-saved'}
+                      <Database size={18} className={isImportingOdoo ? 'animate-spin' : ''} />
+                      {isImportingOdoo ? 'Importing...' : 'Odoo Import'}
                     </button>
-                  </div>
-
-                  <div className="h-8 w-px bg-stone-200 hidden lg:block mx-2" />
-
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={addOrder}
-                      className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
-                    >
-                      <Plus size={18} />
-                      Add Order
-                    </button>
-                    {shopifyStatus.connected && (
-                      <button 
-                        onClick={importShopifyOrders}
-                        disabled={isImportingShopify}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg transform active:scale-95 ${
-                          isImportingShopify 
-                            ? 'bg-stone-100 text-stone-400 cursor-not-allowed' 
-                            : 'bg-primary hover:bg-primary-dark text-white shadow-primary/20'
-                        }`}
-                      >
-                        <Globe size={18} className={isImportingShopify ? 'animate-spin' : ''} />
-                        {isImportingShopify ? 'Importing...' : 'Shopify Import'}
-                      </button>
-                    )}
-                    {odooStatus.connected && (
-                      <button 
-                        onClick={importOdooOrders}
-                        disabled={isImportingOdoo}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg transform active:scale-95 ${
-                          isImportingOdoo 
-                            ? 'bg-stone-100 text-stone-400 cursor-not-allowed' 
-                            : 'bg-stone-800 hover:bg-stone-900 text-white shadow-stone-200'
-                        }`}
-                      >
-                        <Database size={18} className={isImportingOdoo ? 'animate-spin' : ''} />
-                        {isImportingOdoo ? 'Importing...' : 'Odoo Import'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
-                <div className="p-8 space-y-4">
-                  <div className="grid grid-cols-12 gap-4 px-4 pb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                    <div className="col-span-4">Item Sold</div>
-                    <div className="col-span-2">Qty</div>
-                    <div className="col-span-3">Customer</div>
-                    <div className="col-span-2">Phone</div>
-                    <div className="col-span-1 text-right">Del</div>
-                  </div>
-                  <div className="space-y-3">
-                    {orders.filter(o => o.date === orderDate).map((order) => (
-                      <div key={order.id} className="grid grid-cols-12 items-center gap-4 p-4 bg-stone-50/50 rounded-2xl border border-stone-100 transition-all hover:border-primary/20 group">
-                        <div className="col-span-4">
-                          <select 
-                            value={order.menuItemId || ''}
-                            onChange={(e) => updateOrder(order.id, 'menuItemId', e.target.value)}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                          >
-                            <option value="" disabled>Select Menu Item</option>
-                            {menu.map(m => (
-                              <option key={m.id} value={m.id}>{m.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="col-span-2">
-                          <input 
-                            type="number" 
-                            value={order.quantity ?? 0}
-                            min="1"
-                            onChange={(e) => updateOrder(order.id, 'quantity', parseInt(e.target.value) || 0)}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                          />
-                        </div>
-                        <div className="col-span-3">
-                          <input 
-                            type="text" 
-                            placeholder="Name"
-                            value={order.customerName || ''}
-                            onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <input 
-                            type="text" 
-                            placeholder="Phone"
-                            value={order.customerPhone || ''}
-                            onChange={(e) => updateOrder(order.id, 'customerPhone', e.target.value)}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                          />
-                        </div>
-                        <div className="col-span-1 text-right flex justify-end">
-                          <button 
-                            onClick={() => deleteOrder(order.id)}
-                            className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
-                            title="Delete Order"
-                          >
-                            <Trash2 size={20} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {orders.filter(o => o.date === orderDate).length === 0 && (
-                    <div className="text-center py-20 bg-stone-50/30 rounded-[2.5rem] border-2 border-dashed border-stone-100">
-                      <div className="w-20 h-20 bg-white rounded-3xl shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
-                        <ClipboardList size={40} />
-                      </div>
-                      <h3 className="text-xl font-sans font-bold text-stone-800 mb-2">No orders logged yet</h3>
-                      <p className="text-stone-500 text-sm mb-8 italic font-sans">Start logging your sales for {new Date(orderDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.</p>
-                      <button 
-                        onClick={addOrder}
-                        className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
-                      >
-                        <Plus size={18} />
-                        Log First Sale
-                      </button>
-                    </div>
                   )}
                 </div>
               </div>
+
+              {/* Summary bar */}
+              {(() => {
+                const rangeOrders = orders.filter(o => o.date >= orderFilterStart && o.date <= orderFilterEnd);
+                const totalItems = rangeOrders.reduce((s, o) => s + o.quantity, 0);
+                return rangeOrders.length > 0 ? (
+                  <div className="flex flex-wrap gap-4">
+                    <div className="bg-white border border-stone-200/50 rounded-2xl px-5 py-3 shadow-sm flex items-center gap-3">
+                      <ShoppingBag size={16} className="text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Orders</span>
+                      <span className="text-lg font-bold text-stone-800">{rangeOrders.length}</span>
+                    </div>
+                    <div className="bg-white border border-stone-200/50 rounded-2xl px-5 py-3 shadow-sm flex items-center gap-3">
+                      <Package size={16} className="text-emerald-500" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Items Sold</span>
+                      <span className="text-lg font-bold text-stone-800">{totalItems}</span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Orders table */}
+              <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
+                {(() => {
+                  const rangeOrders = orders
+                    .filter(o => o.date >= orderFilterStart && o.date <= orderFilterEnd)
+                    .sort((a, b) => b.date.localeCompare(a.date));
+
+                  if (rangeOrders.length === 0) {
+                    return (
+                      <div className="text-center py-20 px-8">
+                        <div className="w-20 h-20 bg-stone-50 rounded-3xl shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
+                          <ClipboardList size={40} />
+                        </div>
+                        <h3 className="text-xl font-sans font-bold text-stone-800 mb-2">No orders in this range</h3>
+                        <p className="text-stone-500 text-sm mb-8 italic font-sans">Try changing the date range or add a new order.</p>
+                        <button
+                          onClick={() => {
+                            setModalOrderDate(new Date().toISOString().split('T')[0]);
+                            setModalCustomerName('');
+                            setModalCustomerPhone('');
+                            setModalLineItems([{ menuItemId: menu[0]?.id || '', quantity: 1 }]);
+                            setIsAddOrderModalOpen(true);
+                          }}
+                          disabled={menu.length === 0}
+                          className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95 disabled:opacity-50"
+                        >
+                          <Plus size={18} />
+                          Log First Sale
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  // Group by date descending
+                  const byDate: Record<string, Order[]> = {};
+                  rangeOrders.forEach(o => {
+                    if (!byDate[o.date]) byDate[o.date] = [];
+                    byDate[o.date].push(o);
+                  });
+
+                  return (
+                    <div className="divide-y divide-stone-50">
+                      {Object.keys(byDate).sort((a, b) => b.localeCompare(a)).map(date => (
+                        <div key={date}>
+                          {/* Date group header */}
+                          <div className="px-8 py-3 bg-stone-50/70 border-b border-stone-100 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Calendar size={13} className="text-primary" />
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
+                                {new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-bold text-stone-400">
+                              {byDate[date].length} order{byDate[date].length !== 1 ? 's' : ''} · {byDate[date].reduce((s, o) => s + o.quantity, 0)} items
+                            </span>
+                          </div>
+                          {/* Column headers */}
+                          <div className="grid grid-cols-12 gap-4 px-8 pt-3 pb-1 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                            <div className="col-span-4">Item Sold</div>
+                            <div className="col-span-2">Qty</div>
+                            <div className="col-span-3">Customer</div>
+                            <div className="col-span-2">Phone</div>
+                            <div className="col-span-1 text-right">Del</div>
+                          </div>
+                          <div className="px-8 pb-4 space-y-2">
+                            {byDate[date].map(order => (
+                              <div key={order.id} className="grid grid-cols-12 items-center gap-4 p-3 bg-stone-50/50 rounded-2xl border border-stone-100 hover:border-primary/20 transition-all group">
+                                <div className="col-span-4">
+                                  <select
+                                    value={order.menuItemId || ''}
+                                    onChange={(e) => updateOrder(order.id, 'menuItemId', e.target.value)}
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                  >
+                                    <option value="" disabled>Select Item</option>
+                                    {menu.map(m => <option key={m.id} value={m.id}>{m.emoji ? `${m.emoji} ` : ''}{m.name}</option>)}
+                                  </select>
+                                </div>
+                                <div className="col-span-2">
+                                  <input
+                                    type="number" min="1"
+                                    value={order.quantity ?? 0}
+                                    onChange={(e) => updateOrder(order.id, 'quantity', parseInt(e.target.value) || 0)}
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                  />
+                                </div>
+                                <div className="col-span-3">
+                                  <input
+                                    type="text" placeholder="Customer name"
+                                    value={order.customerName || ''}
+                                    onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                  />
+                                </div>
+                                <div className="col-span-2">
+                                  <input
+                                    type="text" placeholder="Phone"
+                                    value={order.customerPhone || ''}
+                                    onChange={(e) => updateOrder(order.id, 'customerPhone', e.target.value)}
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                  />
+                                </div>
+                                <div className="col-span-1 flex justify-end">
+                                  <button
+                                    onClick={() => deleteOrder(order.id)}
+                                    className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
+                                    title="Delete Order"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </motion.div>
           )}
+
+          {/* Add Order Modal */}
+          <AnimatePresence>
+            {isAddOrderModalOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                onClick={(e) => { if (e.target === e.currentTarget) setIsAddOrderModalOpen(false); }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                >
+                  {/* Modal Header */}
+                  <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-stone-100">
+                    <div>
+                      <h3 className="text-xl font-bold text-stone-800 font-sans">New Order</h3>
+                      <p className="text-stone-400 text-xs mt-0.5">Add one or more items for a customer</p>
+                    </div>
+                    <button
+                      onClick={() => setIsAddOrderModalOpen(false)}
+                      className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-all"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div className="px-8 py-6 space-y-6">
+                    {/* Date */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Order Date</label>
+                      <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3">
+                        <Calendar size={16} className="text-primary shrink-0" />
+                        <input
+                          type="date"
+                          value={modalOrderDate}
+                          onChange={(e) => setModalOrderDate(e.target.value)}
+                          className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Customer Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. John Smith"
+                          value={modalCustomerName}
+                          onChange={(e) => setModalCustomerName(e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Phone</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 555-0100"
+                          value={modalCustomerPhone}
+                          onChange={(e) => setModalCustomerPhone(e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Line Items */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Items Ordered</label>
+                        <button
+                          onClick={() => setModalLineItems(prev => [...prev, { menuItemId: menu[0]?.id || '', quantity: 1 }])}
+                          className="flex items-center gap-1.5 text-primary hover:text-primary-dark text-[10px] font-bold uppercase tracking-widest transition-colors"
+                        >
+                          <Plus size={14} /> Add Item
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {modalLineItems.map((line, idx) => {
+                          const selectedItem = menu.find(m => m.id === line.menuItemId);
+                          return (
+                            <div key={idx} className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-2xl p-3">
+                              <select
+                                value={line.menuItemId}
+                                onChange={(e) => setModalLineItems(prev => prev.map((l, i) => i === idx ? { ...l, menuItemId: e.target.value } : l))}
+                                className="flex-1 bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              >
+                                <option value="" disabled>Select item…</option>
+                                {menu.map(m => <option key={m.id} value={m.id}>{m.emoji ? `${m.emoji} ` : ''}{m.name}</option>)}
+                              </select>
+                              <input
+                                type="number" min="1"
+                                value={line.quantity}
+                                onChange={(e) => setModalLineItems(prev => prev.map((l, i) => i === idx ? { ...l, quantity: parseInt(e.target.value) || 1 } : l))}
+                                className="w-20 bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-center transition-all"
+                              />
+                              {selectedItem && (
+                                <span className="text-[10px] font-bold text-stone-400 shrink-0">
+                                  {currency.symbol}{(selectedItem.sellingPrice * line.quantity).toFixed(2)}
+                                </span>
+                              )}
+                              {modalLineItems.length > 1 && (
+                                <button
+                                  onClick={() => setModalLineItems(prev => prev.filter((_, i) => i !== idx))}
+                                  className="p-1.5 text-stone-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all shrink-0"
+                                >
+                                  <X size={15} />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Order total */}
+                      {modalLineItems.some(l => l.menuItemId) && (
+                        <div className="flex justify-between items-center pt-2 border-t border-stone-100">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Order Total</span>
+                          <span className="text-lg font-bold text-stone-800">
+                            {currency.symbol}{modalLineItems.reduce((sum, line) => {
+                              const item = menu.find(m => m.id === line.menuItemId);
+                              return sum + (item ? item.sellingPrice * line.quantity : 0);
+                            }, 0).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="px-8 pb-8 flex gap-3">
+                    <button
+                      onClick={() => setIsAddOrderModalOpen(false)}
+                      className="flex-1 py-3 rounded-2xl border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      disabled={isSavingOrder || modalLineItems.some(l => !l.menuItemId)}
+                      onClick={async () => {
+                        if (!auth.currentUser) return;
+                        const validLines = modalLineItems.filter(l => l.menuItemId && l.quantity > 0);
+                        if (validLines.length === 0) return;
+                        setIsSavingOrder(true);
+                        try {
+                          const userId = auth.currentUser.uid;
+                          for (const line of validLines) {
+                            const id = Math.random().toString(36).substr(2, 9);
+                            const newOrder: Order = {
+                              id,
+                              menuItemId: line.menuItemId,
+                              quantity: line.quantity,
+                              date: modalOrderDate,
+                              customerName: modalCustomerName || undefined,
+                              customerPhone: modalCustomerPhone || undefined,
+                            };
+                            await setDoc(doc(db, 'users', userId, 'orders', id), newOrder);
+                          }
+                          // Expand the date range to include the new order date if outside current range
+                          if (modalOrderDate < orderFilterStart) setOrderFilterStart(modalOrderDate);
+                          if (modalOrderDate > orderFilterEnd) setOrderFilterEnd(modalOrderDate);
+                          setIsAddOrderModalOpen(false);
+                        } catch (err) {
+                          handleFirestoreError(err, OperationType.WRITE, 'orders');
+                        } finally {
+                          setIsSavingOrder(false);
+                        }
+                      }}
+                      className="flex-1 py-3 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+                    >
+                      {isSavingOrder ? 'Saving…' : `Save ${modalLineItems.filter(l => l.menuItemId).length > 1 ? `${modalLineItems.filter(l => l.menuItemId).length} Items` : 'Order'}`}
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Settings Tab */}
           {activeTab === 'settings' && (
