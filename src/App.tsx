@@ -4949,7 +4949,8 @@ function BakeryApp() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Orders in Period</div>
-                  <div className="text-4xl font-sans font-bold text-stone-800">{filteredOrders.reduce((acc, o) => acc + o.quantity, 0)}</div>
+                  <div className="text-4xl font-sans font-bold text-stone-800">{filteredOrders.length}</div>
+                  <div className="text-[10px] text-stone-400 mt-2 uppercase font-bold tracking-wider">{filteredOrders.reduce((acc, o) => acc + o.quantity, 0)} items sold</div>
                 </div>
                 <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Items on Menu</div>
