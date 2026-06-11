@@ -265,6 +265,7 @@ interface MenuItem {
   sellingPrice: number;
   servings?: number;
   finishedGoodsStock?: number;
+  emoji?: string;
 }
 
 /**
@@ -1627,7 +1628,7 @@ function BakeryApp() {
       const userId = auth.currentUser.uid;
       await setDoc(doc(db, 'users', userId, 'materials', restockMaterial.id), {
         initialStock: newStock,
-        costPerUnit: newMAC
+        costPerUnit: Number(newMAC.toFixed(2))
       }, { merge: true });
       
       setRestockMaterial(null);
@@ -1678,7 +1679,8 @@ function BakeryApp() {
       id,
       name: 'New Menu Item',
       sellingPrice: 0,
-      recipe: []
+      recipe: [],
+      emoji: '🧁'
     };
     try {
       await setDoc(doc(db, 'users', userId, 'menu', id), newItem);
@@ -2586,7 +2588,7 @@ function BakeryApp() {
           )}
           
           <div className="mt-8 pt-6 border-t border-stone-100 text-center">
-            <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">Powered by Firebase</p>
+            <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">BetterEat Bakery</p>
           </div>
         </motion.div>
       </div>
@@ -2643,7 +2645,7 @@ function BakeryApp() {
             <SidebarTabButton id="orders" label="Orders" icon={ClipboardList} />
             <SidebarTabButton id="production" label="Production" icon={Factory} />
             <SidebarTabButton id="menu" label="Recipes" icon={Utensils} />
-            <SidebarTabButton id="experiments" label="Experiments" icon={FlaskConical} />
+            <SidebarTabButton id="experiments" label="R&D" icon={FlaskConical} />
           </nav>
         </div>
 
@@ -2949,8 +2951,8 @@ function BakeryApp() {
                                   <span className="text-stone-400 text-xs font-bold">{currency.symbol}</span>
                                   <input 
                                     type="number" 
-                                    step="0.0001"
-                                    value={mat.costPerUnit ?? 0}
+                                    step="0.01"
+                                    value={mat.costPerUnit != null ? Number(mat.costPerUnit.toFixed(2)) : 0}
                                     onChange={(e) => updateMaterial(mat.id, 'costPerUnit', parseFloat(e.target.value) || 0)}
                                     className="w-24 bg-stone-50/50 border border-stone-100 rounded-xl px-3 py-1.5 text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                   />
@@ -3067,8 +3069,15 @@ function BakeryApp() {
                   <div key={item.id} className="bg-white rounded-3xl border border-stone-200/50 shadow-sm overflow-hidden transition-all hover:shadow-md">
                     <div className="px-6 py-5 bg-stone-50/50 border-b border-stone-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                          <Utensils size={24} />
+                        <div className="relative w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl shrink-0 overflow-hidden cursor-text hover:bg-primary/20 transition-colors">
+                          <input 
+                            type="text"
+                            maxLength={2}
+                            value={item.emoji || ''}
+                            onChange={(e) => updateMenuItem(item.id, 'emoji', e.target.value)}
+                            className="absolute inset-0 w-full h-full text-center bg-transparent outline-none z-10 cursor-text"
+                          />
+                          {!item.emoji && <Utensils size={24} className="opacity-50 absolute pointer-events-none" />}
                         </div>
                         <div className="flex-1">
                           <input 
@@ -4313,7 +4322,7 @@ function BakeryApp() {
             </motion.div>
           )}
 
-          {/* Experiments Tab */}
+          {/* R&D Tab */}
           {activeTab === 'experiments' && (
             <motion.div
               key="experiments"
@@ -4324,7 +4333,7 @@ function BakeryApp() {
             >
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
                 <div>
-                  <h2 className="text-3xl font-sans font-bold text-stone-800">Recipe Experiments</h2>
+                  <h2 className="text-3xl font-sans font-bold text-stone-800">R&D</h2>
                   <p className="text-stone-500 text-sm italic font-sans">Log your daily experiments and track material usage.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
@@ -4334,7 +4343,7 @@ function BakeryApp() {
                     className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
                   >
                     <Plus size={18} />
-                    New Experiment
+                    New R&D Session
                   </button>
                 </div>
               </div>
@@ -4423,14 +4432,14 @@ function BakeryApp() {
                     <div className="w-20 h-20 bg-stone-50 rounded-3xl shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
                       <FlaskConical size={40} />
                     </div>
-                    <h3 className="text-xl font-sans font-bold text-stone-800 mb-2">No experiments logged for this day</h3>
+                    <h3 className="text-xl font-sans font-bold text-stone-800 mb-2">No R&D sessions logged</h3>
                     <p className="text-stone-500 text-sm mb-8 italic font-sans">Track your R&D and recipe testing costs.</p>
                     <button 
                       onClick={addExperiment}
                       className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
                     >
                       <Plus size={18} />
-                      Log First Experiment
+                      Log First R&D Session
                     </button>
                   </div>
                 )}
@@ -4468,6 +4477,51 @@ function BakeryApp() {
                   ))}
                 </div>
               </div>
+
+              {(materials.length === 0 || menu.length === 0 || orders.length === 0) && (
+                <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-amber-200/50 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -mr-16 -mt-16 z-0" />
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-bold text-stone-800 mb-2">Welcome to BetterEat Bakery! 🍞</h3>
+                    <p className="text-stone-500 text-sm mb-8">Let's get your bakery set up in 3 simple steps:</p>
+                    
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${materials.length > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-stone-100 text-stone-400'}`}>
+                          {materials.length > 0 ? '✓' : '1'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-bold text-stone-700">Add Materials</div>
+                          <div className="text-xs text-stone-500">Add ingredients to your stock (Stock tab)</div>
+                        </div>
+                        {materials.length === 0 && <button onClick={() => setActiveTab('inventory')} className="text-xs uppercase font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-4 py-2 rounded-xl transition-colors">Go</button>}
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${menu.length > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-stone-100 text-stone-400'}`}>
+                          {menu.length > 0 ? '✓' : '2'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-bold text-stone-700">Build Recipes</div>
+                          <div className="text-xs text-stone-500">Create products with costs attached (Recipes tab)</div>
+                        </div>
+                        {menu.length === 0 && materials.length > 0 && <button onClick={() => setActiveTab('menu')} className="text-xs uppercase font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-4 py-2 rounded-xl transition-colors">Go</button>}
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${orders.length > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-stone-100 text-stone-400'}`}>
+                          {orders.length > 0 ? '✓' : '3'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-bold text-stone-700">Log an Order</div>
+                          <div className="text-xs text-stone-500">Record a sale to track your profit (Orders tab)</div>
+                        </div>
+                        {orders.length === 0 && menu.length > 0 && <button onClick={() => setActiveTab('orders')} className="text-xs uppercase font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-4 py-2 rounded-xl transition-colors">Go</button>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {summaryRange !== 'custom' && (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-[2rem] border border-stone-200/50 shadow-sm">
@@ -4563,6 +4617,12 @@ function BakeryApp() {
                 </div>
 
                 <div className="h-[350px] w-full">
+                  {chartData.every(d => d.income === 0 && d.expenses === 0 && d.profit === 0) ? (
+                    <div className="h-full w-full flex flex-col items-center justify-center text-stone-400 bg-stone-50/50 rounded-2xl border border-dashed border-stone-200">
+                      <Calculator size={48} className="mb-4 text-stone-200" />
+                      <p className="font-sans italic">No financial data for this period.</p>
+                    </div>
+                  ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
@@ -4642,6 +4702,7 @@ function BakeryApp() {
                       />
                     </AreaChart>
                   </ResponsiveContainer>
+                  )}
                 </div>
               </div>
 
