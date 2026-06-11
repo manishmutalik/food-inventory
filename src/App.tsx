@@ -496,6 +496,7 @@ function BakeryApp() {
   const [displayName, setDisplayName] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
   // ── Modal / Notification State ──────────────────────────────────────────────────
   const [modalConfig, setModalConfig] = useState<{
     show: boolean;
@@ -617,6 +618,195 @@ function BakeryApp() {
       setAuthError(message);
     } finally {
       setIsAuthenticating(false);
+    }
+  };
+
+  /**
+   * Seeds realistic demo data for a newly created demo user in Firestore.
+   * Sets up settings, materials, menu items, sales orders, production runs, and R&D sessions.
+   * Uses a single atomic writeBatch to ensure all writes complete together.
+   * Default currency is set to INR (Indian Rupee, code: 'INR', symbol: '₹').
+   */
+  const seedDemoData = async (userId: string) => {
+    const getPastDateStr = (daysAgo: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() - daysAgo);
+      return d.toISOString().split('T')[0];
+    };
+
+    // 1. Settings Document
+    const demoSettings = {
+      name: "BetterEat Bakery (Demo)",
+      logo: "",
+      primaryColor: "#10b981",
+      address: "123 Sourdough Lane, Bakerstown",
+      phone: "555-0199",
+      email: `${userId}@demo.bettereat.com`,
+      currency: { code: 'INR', symbol: '₹' }, // default currency is INR
+      categories: ["Raw Materials", "Packaging Materials"]
+    };
+
+    // 2. Materials
+    const materialsToSeed = [
+      { id: 'm_flour', name: 'All-Purpose Flour', unit: 'g', initialStock: 50000, costPerUnit: 0.002, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_sugar', name: 'Granulated Sugar', unit: 'g', initialStock: 25000, costPerUnit: 0.0015, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_butter', name: 'Unsalted Butter', unit: 'g', initialStock: 10000, costPerUnit: 0.012, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_eggs', name: 'Large Eggs', unit: 'pcs', initialStock: 150, costPerUnit: 0.25, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_milk', name: 'Whole Milk', unit: 'ml', initialStock: 20000, costPerUnit: 0.0012, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_yeast', name: 'Active Dry Yeast', unit: 'g', initialStock: 2000, costPerUnit: 0.05, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_chips', name: 'Chocolate Chips', unit: 'g', initialStock: 8000, costPerUnit: 0.008, category: 'Raw Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+      { id: 'm_box', name: 'Packaging Box', unit: 'pcs', initialStock: 300, costPerUnit: 0.50, category: 'Packaging Materials', threshold: 20, dateAdded: getPastDateStr(30) },
+    ];
+
+    // 3. Menu Items (with recipes matching the material IDs)
+    const menuToSeed = [
+      {
+        id: 'menu_croissant',
+        name: 'Classic Croissant',
+        sellingPrice: 4.50,
+        emoji: '🥐',
+        finishedGoodsStock: 25,
+        recipe: [
+          { materialId: 'm_flour', amount: 150, unit: 'g' },
+          { materialId: 'm_sugar', amount: 15, unit: 'g' },
+          { materialId: 'm_butter', amount: 75, unit: 'g' },
+          { materialId: 'm_milk', amount: 50, unit: 'ml' },
+          { materialId: 'm_yeast', amount: 5, unit: 'g' },
+        ]
+      },
+      {
+        id: 'menu_muffin',
+        name: 'Chocolate Muffin',
+        sellingPrice: 3.75,
+        emoji: '🧁',
+        finishedGoodsStock: 15,
+        recipe: [
+          { materialId: 'm_flour', amount: 120, unit: 'g' },
+          { materialId: 'm_sugar', amount: 80, unit: 'g' },
+          { materialId: 'm_butter', amount: 50, unit: 'g' },
+          { materialId: 'm_eggs', amount: 1, unit: 'pcs' },
+          { materialId: 'm_milk', amount: 60, unit: 'ml' },
+          { materialId: 'm_chips', amount: 40, unit: 'g' },
+        ]
+      },
+      {
+        id: 'menu_sourdough',
+        name: 'Sourdough Loaf',
+        sellingPrice: 6.00,
+        emoji: '🍞',
+        finishedGoodsStock: 10,
+        recipe: [
+          { materialId: 'm_flour', amount: 500, unit: 'g' },
+          { materialId: 'm_yeast', amount: 10, unit: 'g' },
+        ]
+      }
+    ];
+
+    // 4. Orders
+    const ordersToSeed = [
+      // Today (Day 0)
+      { id: 'ord_1', menuItemId: 'menu_croissant', quantity: 8, date: getPastDateStr(0), customerName: 'John Smith', customerPhone: '555-0101' },
+      { id: 'ord_2', menuItemId: 'menu_muffin', quantity: 12, date: getPastDateStr(0), customerName: 'Alice Green', customerPhone: '555-0102' },
+      { id: 'ord_3', menuItemId: 'menu_sourdough', quantity: 4, date: getPastDateStr(0), customerName: 'Robert Vance', customerPhone: '555-0103' },
+      // Yesterday (Day 1)
+      { id: 'ord_4', menuItemId: 'menu_croissant', quantity: 15, date: getPastDateStr(1), customerName: 'Cafe Central', customerPhone: '555-0201' },
+      { id: 'ord_5', menuItemId: 'menu_muffin', quantity: 8, date: getPastDateStr(1), customerName: 'David Lee', customerPhone: '555-0202' },
+      { id: 'ord_6', menuItemId: 'menu_sourdough', quantity: 6, date: getPastDateStr(1), customerName: 'Emily Davis', customerPhone: '555-0203' },
+      // Day 2
+      { id: 'ord_7', menuItemId: 'menu_croissant', quantity: 6, date: getPastDateStr(2), customerName: 'Local Inn', customerPhone: '555-0301' },
+      { id: 'ord_8', menuItemId: 'menu_muffin', quantity: 10, date: getPastDateStr(2), customerName: 'Bake Fanatic', customerPhone: '555-0302' },
+      // Day 3
+      { id: 'ord_9', menuItemId: 'menu_sourdough', quantity: 8, date: getPastDateStr(3), customerName: 'George Miller', customerPhone: '555-0401' },
+      { id: 'ord_10', menuItemId: 'menu_croissant', quantity: 12, date: getPastDateStr(3), customerName: 'Sarah Connor', customerPhone: '555-0402' },
+      // Day 4
+      { id: 'ord_11', menuItemId: 'menu_muffin', quantity: 14, date: getPastDateStr(4), customerName: 'Kevin Hart', customerPhone: '555-0501' },
+      { id: 'ord_12', menuItemId: 'menu_croissant', quantity: 5, date: getPastDateStr(4), customerName: 'Office Gathering', customerPhone: '555-0502' },
+      // Day 5
+      { id: 'ord_13', menuItemId: 'menu_sourdough', quantity: 10, date: getPastDateStr(5), customerName: 'Daily Grind', customerPhone: '555-0601' },
+      { id: 'ord_14', menuItemId: 'menu_croissant', quantity: 10, date: getPastDateStr(5), customerName: 'Hotel Continental', customerPhone: '555-0602' },
+      // Day 6
+      { id: 'ord_15', menuItemId: 'menu_muffin', quantity: 15, date: getPastDateStr(6), customerName: 'School Event', customerPhone: '555-0701' },
+      { id: 'ord_16', menuItemId: 'menu_sourdough', quantity: 5, date: getPastDateStr(6), customerName: 'Community Center', customerPhone: '555-0702' }
+    ];
+
+    // 5. Production Runs
+    const productionRunsToSeed = [
+      { id: 'run_1', recipeId: 'menu_croissant', quantityProduced: 30, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 30 * 1.53, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_2', recipeId: 'menu_muffin', quantityProduced: 40, date: getPastDateStr(5), purpose: 'market_stock', costTotal: 40 * 1.60, createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000 },
+      { id: 'run_3', recipeId: 'menu_sourdough', quantityProduced: 20, date: getPastDateStr(3), purpose: 'market_stock', costTotal: 20 * 1.50, createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000 },
+      { id: 'run_4', recipeId: 'menu_croissant', quantityProduced: 25, date: getPastDateStr(1), purpose: 'customer_order', costTotal: 25 * 1.53, createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000 }
+    ];
+
+    // 6. Recipe R&D Session (Experiments)
+    const experimentsToSeed = [
+      {
+        id: 'exp_1',
+        name: 'Gluten-Free Croissant Attempt',
+        date: getPastDateStr(2),
+        materials: [
+          { materialId: 'm_flour', amount: 200, unit: 'g' },
+          { materialId: 'm_sugar', amount: 20, unit: 'g' },
+          { materialId: 'm_butter', amount: 80, unit: 'g' }
+        ],
+        notes: 'Tried replacing AP Flour with almond flour. Dough was too crumbly, did not rise well. Tastes good but texture is off.'
+      }
+    ];
+
+    const batch = writeBatch(db);
+
+    // Write settings
+    batch.set(doc(db, 'users', userId, 'settings', 'bakery'), demoSettings);
+
+    // Write materials
+    materialsToSeed.forEach(mat => {
+      batch.set(doc(db, 'users', userId, 'materials', mat.id), mat);
+    });
+
+    // Write menu items
+    menuToSeed.forEach(item => {
+      batch.set(doc(db, 'users', userId, 'menu', item.id), item);
+    });
+
+    // Write orders
+    ordersToSeed.forEach(order => {
+      batch.set(doc(db, 'users', userId, 'orders', order.id), order);
+    });
+
+    // Write production runs
+    productionRunsToSeed.forEach(run => {
+      batch.set(doc(db, 'users', userId, 'productionRuns', run.id), run);
+    });
+
+    // Write experiments
+    experimentsToSeed.forEach(exp => {
+      batch.set(doc(db, 'users', userId, 'experiments', exp.id), exp);
+    });
+
+    await batch.commit();
+  };
+
+  /**
+   * Generates a unique temporary email and logs in as a demo user.
+   * Once authenticated, seeds the Firestore space with rich mock data.
+   */
+  const handleDemoLogin = async () => {
+    setAuthError(null);
+    setIsDemoLoading(true);
+    try {
+      const demoEmail = `demo_${Date.now()}_${Math.floor(Math.random() * 10000)}@bettereat.com`;
+      const demoPassword = `DemoPassword123!`;
+      const userCredential = await createUserWithEmailAndPassword(auth, demoEmail, demoPassword);
+      
+      // Set the display name to "Demo Owner"
+      await updateProfile(userCredential.user, { displayName: 'Demo Owner' });
+      
+      // Seed the database for this new UID
+      await seedDemoData(userCredential.user.uid);
+    } catch (error: any) {
+      console.error('Demo login failed', error);
+      setAuthError('Failed to initialize demo sandbox. Please try again.');
+    } finally {
+      setIsDemoLoading(false);
     }
   };
 
@@ -2515,6 +2705,24 @@ function BakeryApp() {
                 <Mail size={20} />
                 Sign in with Email
               </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-stone-100"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-stone-400 font-bold tracking-widest">Or</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleDemoLogin}
+                disabled={isAuthenticating || isDemoLoading}
+                className="w-full flex items-center justify-center gap-3 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold py-3 rounded-xl shadow-sm transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+              >
+                <Sparkles size={20} className={`text-amber-600 ${isDemoLoading ? 'animate-spin' : 'animate-pulse'}`} />
+                {isDemoLoading ? 'Generating Demo Sandbox...' : 'Explore Demo Sandbox'}
+              </button>
             </div>
           ) : (
             <form onSubmit={handleEmailAuth} className="space-y-4">
@@ -2581,7 +2789,7 @@ function BakeryApp() {
                   }}
                   className="text-xs text-stone-400 font-medium hover:text-stone-600"
                 >
-                  Back to Google login
+                  Back to options
                 </button>
               </div>
             </form>
@@ -3074,7 +3282,7 @@ function BakeryApp() {
                             type="text"
                             maxLength={2}
                             value={item.emoji || ''}
-                            onChange={(e) => updateMenuItem(item.id, 'emoji', e.target.value)}
+                            onChange={(e) => updateMenuItemField(item.id, 'emoji', e.target.value)}
                             className="absolute inset-0 w-full h-full text-center bg-transparent outline-none z-10 cursor-text"
                           />
                           {!item.emoji && <Utensils size={24} className="opacity-50 absolute pointer-events-none" />}
