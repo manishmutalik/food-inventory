@@ -2642,7 +2642,7 @@ function BakeryApp() {
   const BottomNavButton = ({ id, label, icon: Icon }: { id: typeof activeTab, label: string, icon: any }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex flex-col items-center justify-center gap-1 min-w-[72px] px-2 py-2 rounded-xl transition-all relative ${
+      className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-0 px-1 py-2 rounded-xl transition-all relative ${
         activeTab === id 
           ? 'text-amber-600' 
           : 'text-stone-400 hover:text-stone-600'
@@ -3111,7 +3111,8 @@ function BakeryApp() {
                   </div>
 
                   <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
-                    <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left border-collapse">
                       <thead>
                         <tr className="bg-stone-50/50 border-b border-stone-100">
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Material Name</th>
@@ -3216,6 +3217,7 @@ function BakeryApp() {
                         )}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -3231,7 +3233,8 @@ function BakeryApp() {
                   </div>
 
                   <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
-                    <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto">
+                    <table className="w-full min-w-[400px] text-left border-collapse">
                       <thead>
                         <tr className="bg-stone-50/50 border-b border-stone-100">
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Material Name</th>
@@ -3262,6 +3265,7 @@ function BakeryApp() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </div>
               )}
@@ -3511,7 +3515,7 @@ function BakeryApp() {
                                         </div>
                                         <button 
                                           onClick={() => removeIngredientFromRecipe(item.id, idx)}
-                                          className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
+                                          className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                         >
                                           <Trash2 size={16} />
                                         </button>
@@ -3584,7 +3588,7 @@ function BakeryApp() {
                                         </div>
                                         <button 
                                           onClick={() => removeIngredientFromRecipe(item.id, idx)}
-                                          className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
+                                          className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                         >
                                           <Trash2 size={16} />
                                         </button>
@@ -3791,59 +3795,94 @@ function BakeryApp() {
                               {byDate[date].length} order{byDate[date].length !== 1 ? 's' : ''} · {byDate[date].reduce((s, o) => s + o.quantity, 0)} items
                             </span>
                           </div>
-                          {/* Column headers */}
-                          <div className="grid grid-cols-12 gap-4 px-8 pt-3 pb-1 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                          {/* Column headers — desktop only */}
+                          <div className="hidden sm:grid grid-cols-12 gap-4 px-4 sm:px-8 pt-3 pb-1 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
                             <div className="col-span-4">Item Sold</div>
                             <div className="col-span-2">Qty</div>
                             <div className="col-span-3">Customer</div>
                             <div className="col-span-2">Phone</div>
                             <div className="col-span-1 text-right">Del</div>
                           </div>
-                          <div className="px-8 pb-4 space-y-2">
+                          <div className="px-3 sm:px-8 pb-4 space-y-2">
                             {byDate[date].map(order => (
-                              <div key={order.id} className="grid grid-cols-12 items-center gap-4 p-3 bg-stone-50/50 rounded-2xl border border-stone-100 hover:border-primary/20 transition-all group">
-                                <div className="col-span-4">
+                              <div key={order.id} className="group p-3 bg-stone-50/50 rounded-2xl border border-stone-100 hover:border-primary/20 transition-all">
+                                {/* Mobile: stacked card layout */}
+                                <div className="flex flex-col gap-2 sm:hidden">
                                   <select
                                     value={order.menuItemId || ''}
                                     onChange={(e) => updateOrder(order.id, 'menuItemId', e.target.value)}
-                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm"
                                   >
                                     <option value="" disabled>Select Item</option>
                                     {menu.map(m => <option key={m.id} value={m.id}>{m.emoji ? `${m.emoji} ` : ''}{m.name}</option>)}
                                   </select>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number" min="1"
+                                      value={order.quantity ?? 0}
+                                      onChange={(e) => updateOrder(order.id, 'quantity', parseInt(e.target.value) || 0)}
+                                      className="w-20 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 outline-none shadow-sm text-center"
+                                    />
+                                    <input
+                                      type="text" placeholder="Customer name"
+                                      value={order.customerName || ''}
+                                      onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
+                                      className="flex-1 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 outline-none shadow-sm"
+                                    />
+                                    <button
+                                      onClick={() => deleteOrder(order.id)}
+                                      className="p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                                      title="Delete Order"
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="col-span-2">
-                                  <input
-                                    type="number" min="1"
-                                    value={order.quantity ?? 0}
-                                    onChange={(e) => updateOrder(order.id, 'quantity', parseInt(e.target.value) || 0)}
-                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                                  />
-                                </div>
-                                <div className="col-span-3">
-                                  <input
-                                    type="text" placeholder="Customer name"
-                                    value={order.customerName || ''}
-                                    onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
-                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <input
-                                    type="text" placeholder="Phone"
-                                    value={order.customerPhone || ''}
-                                    onChange={(e) => updateOrder(order.id, 'customerPhone', e.target.value)}
-                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                                  />
-                                </div>
-                                <div className="col-span-1 flex justify-end">
-                                  <button
-                                    onClick={() => deleteOrder(order.id)}
-                                    className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
-                                    title="Delete Order"
-                                  >
-                                    <Trash2 size={18} />
-                                  </button>
+                                {/* Desktop: grid row layout */}
+                                <div className="hidden sm:grid grid-cols-12 items-center gap-4">
+                                  <div className="col-span-4">
+                                    <select
+                                      value={order.menuItemId || ''}
+                                      onChange={(e) => updateOrder(order.id, 'menuItemId', e.target.value)}
+                                      className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                    >
+                                      <option value="" disabled>Select Item</option>
+                                      {menu.map(m => <option key={m.id} value={m.id}>{m.emoji ? `${m.emoji} ` : ''}{m.name}</option>)}
+                                    </select>
+                                  </div>
+                                  <div className="col-span-2">
+                                    <input
+                                      type="number" min="1"
+                                      value={order.quantity ?? 0}
+                                      onChange={(e) => updateOrder(order.id, 'quantity', parseInt(e.target.value) || 0)}
+                                      className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                    />
+                                  </div>
+                                  <div className="col-span-3">
+                                    <input
+                                      type="text" placeholder="Customer name"
+                                      value={order.customerName || ''}
+                                      onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
+                                      className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                    />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <input
+                                      type="text" placeholder="Phone"
+                                      value={order.customerPhone || ''}
+                                      onChange={(e) => updateOrder(order.id, 'customerPhone', e.target.value)}
+                                      className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
+                                    />
+                                  </div>
+                                  <div className="col-span-1 flex justify-end">
+                                    <button
+                                      onClick={() => deleteOrder(order.id)}
+                                      className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
+                                      title="Delete Order"
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -4734,7 +4773,8 @@ function BakeryApp() {
 
                 return (
                   <div className="bg-white rounded-[2rem] border border-stone-200/50 shadow-sm overflow-hidden">
-                    <table className="w-full">
+                    <div className="overflow-x-auto">
+                    <table className="w-full min-w-[600px]">
                       <thead className="bg-stone-50">
                         <tr>
                           <th className="px-6 py-4 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Date</th>
@@ -4780,6 +4820,7 @@ function BakeryApp() {
                         })}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 );
               })()}
@@ -4879,7 +4920,7 @@ function BakeryApp() {
                               </div>
                               <button 
                                 onClick={() => removeMaterialFromExperiment(exp.id, req.materialId)}
-                                className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"
+                                className="text-stone-300 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100"
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -5221,7 +5262,8 @@ function BakeryApp() {
               </div>
 
               <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
-                <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[500px] text-left border-collapse">
                   <thead>
                     <tr className="bg-stone-50/50 border-b border-stone-100">
                       <th className="px-8 py-5 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Material</th>
@@ -5283,6 +5325,7 @@ function BakeryApp() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             </motion.div>
           )}
@@ -5491,13 +5534,14 @@ function BakeryApp() {
         )}
 
         {/* Scrollable Bottom Nav */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200/50 z-50 flex overflow-x-auto no-scrollbar items-center pb-safe pt-1 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] px-2">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200/50 z-50 flex items-center pb-[env(safe-area-inset-bottom,8px)] pt-1 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
           <BottomNavButton id="summary" label="Home" icon={Calculator} />
           <BottomNavButton id="inventory" label="Stock" icon={Package} />
           <BottomNavButton id="orders" label="Orders" icon={ClipboardList} />
           <BottomNavButton id="production" label="Runs" icon={Factory} />
           <BottomNavButton id="menu" label="Recipes" icon={Utensils} />
-          <BottomNavButton id="settings" label="Settings" icon={Settings} />
+          <BottomNavButton id="experiments" label="R&D" icon={FlaskConical} />
+          <BottomNavButton id="settings" label="More" icon={Settings} />
         </nav>
       </div>
 
