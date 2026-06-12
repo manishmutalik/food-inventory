@@ -3823,12 +3823,10 @@ function BakeryApp() {
                                       onChange={(e) => updateOrder(order.id, 'quantity', parseInt(e.target.value) || 0)}
                                       className="w-20 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm font-mono font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 outline-none shadow-sm text-center"
                                     />
-                                    <input
-                                      type="text" placeholder="Customer name"
-                                      value={order.customerName || ''}
-                                      onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
-                                      className="flex-1 bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 outline-none shadow-sm"
-                                    />
+                                    <div className="flex-1 bg-stone-50 border border-stone-100 rounded-xl px-3 py-2.5 text-sm font-medium text-stone-500 overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-between">
+                                      <span>{order.customerName || <span className="text-stone-300 italic">No name</span>}</span>
+                                      {order.customerPhone && <span className="text-stone-400 text-xs font-normal shrink-0">({order.customerPhone})</span>}
+                                    </div>
                                     <button
                                       onClick={() => deleteOrder(order.id)}
                                       className="p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
@@ -3859,20 +3857,14 @@ function BakeryApp() {
                                     />
                                   </div>
                                   <div className="col-span-3">
-                                    <input
-                                      type="text" placeholder="Customer name"
-                                      value={order.customerName || ''}
-                                      onChange={(e) => updateOrder(order.id, 'customerName', e.target.value)}
-                                      className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                                    />
+                                    <div className="w-full bg-stone-50 border border-stone-100 rounded-xl px-3 py-2 text-sm font-medium text-stone-500 overflow-hidden text-ellipsis whitespace-nowrap">
+                                      {order.customerName || <span className="text-stone-300 italic">No name</span>}
+                                    </div>
                                   </div>
                                   <div className="col-span-2">
-                                    <input
-                                      type="text" placeholder="Phone"
-                                      value={order.customerPhone || ''}
-                                      onChange={(e) => updateOrder(order.id, 'customerPhone', e.target.value)}
-                                      className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none shadow-sm transition-all"
-                                    />
+                                    <div className="w-full bg-stone-50 border border-stone-100 rounded-xl px-3 py-2 text-sm font-medium text-stone-500 overflow-hidden text-ellipsis whitespace-nowrap">
+                                      {order.customerPhone || <span className="text-stone-300 italic">No phone</span>}
+                                    </div>
                                   </div>
                                   <div className="col-span-1 flex justify-end">
                                     <button
