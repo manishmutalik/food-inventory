@@ -3630,20 +3630,20 @@ function BakeryApp() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                   {/* Date range pickers */}
-                  <div className="flex items-center gap-2 bg-white border border-stone-200/50 rounded-2xl px-4 py-2 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-2 bg-white border border-stone-200/50 rounded-2xl px-3 py-2 shadow-sm">
                     <Calendar size={15} className="text-primary shrink-0" />
                     <input
                       type="date"
                       value={orderFilterStart}
                       onChange={(e) => setOrderFilterStart(e.target.value)}
-                      className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer w-32"
+                      className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer w-28 sm:w-32"
                     />
                     <span className="text-stone-300 font-bold text-xs">→</span>
                     <input
                       type="date"
                       value={orderFilterEnd}
                       onChange={(e) => setOrderFilterEnd(e.target.value)}
-                      className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer w-32"
+                      className="bg-transparent border-none focus:ring-0 text-sm font-bold text-stone-700 p-0 cursor-pointer w-28 sm:w-32"
                     />
                   </div>
 
@@ -3784,7 +3784,7 @@ function BakeryApp() {
                       {Object.keys(byDate).sort((a, b) => b.localeCompare(a)).map(date => (
                         <div key={date}>
                           {/* Date group header */}
-                          <div className="px-8 py-3 bg-stone-50/70 border-b border-stone-100 flex items-center justify-between">
+                          <div className="px-4 sm:px-8 py-3 bg-stone-50/70 border-b border-stone-100 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Calendar size={13} className="text-primary" />
                               <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
@@ -3914,7 +3914,7 @@ function BakeryApp() {
                   className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
                 >
                   {/* Modal Header */}
-                  <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-stone-100">
+                  <div className="flex items-center justify-between px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-stone-100">
                     <div>
                       <h3 className="text-xl font-bold text-stone-800 font-sans">New Order</h3>
                       <p className="text-stone-400 text-xs mt-0.5">Add one or more items for a customer</p>
@@ -3927,7 +3927,7 @@ function BakeryApp() {
                     </button>
                   </div>
 
-                  <div className="px-8 py-6 space-y-6">
+                  <div className="px-4 sm:px-8 py-4 sm:py-6 space-y-6">
                     {/* Date */}
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Order Date</label>
@@ -3943,7 +3943,7 @@ function BakeryApp() {
                     </div>
 
                     {/* Customer Info */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Customer Name</label>
                         <input
@@ -4031,7 +4031,7 @@ function BakeryApp() {
                   </div>
 
                   {/* Modal Footer */}
-                  <div className="px-8 pb-8 flex gap-3">
+                  <div className="px-4 sm:px-8 pb-6 sm:pb-8 flex gap-3">
                     <button
                       onClick={() => setIsAddOrderModalOpen(false)}
                       className="flex-1 py-3 rounded-2xl border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all"
@@ -5084,7 +5084,7 @@ function BakeryApp() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="flex items-center gap-6 bg-white p-5 rounded-[2rem] border border-stone-200/50 shadow-sm"
+                  className="flex flex-wrap items-center gap-3 sm:gap-6 bg-white p-5 rounded-[2rem] border border-stone-200/50 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">From</span>
@@ -5399,7 +5399,7 @@ function BakeryApp() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-stone-200/50"
+              className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-y-auto max-h-[90vh] border border-stone-200/50"
             >
               <div className="p-8">
                 <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
