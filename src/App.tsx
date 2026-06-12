@@ -2894,7 +2894,7 @@ function BakeryApp() {
                 initial={{ opacity: 0, x: 50, scale: 0.9 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 20, scale: 0.9 }}
-                className="bg-stone-900/90 backdrop-blur-md text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 pointer-events-auto border border-white/10"
+                className="bg-stone-900/90 backdrop-blur-md text-white px-4 sm:px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 pointer-events-auto border border-white/10 max-w-[calc(100vw-2rem)] sm:max-w-md w-full"
               >
                 <div className="bg-rose-500 p-1.5 rounded-lg shadow-lg shadow-rose-500/20">
                   <AlertCircle size={16} />
@@ -2943,7 +2943,7 @@ function BakeryApp() {
                       const selected = CURRENCIES.find(c => c.code === e.target.value);
                       if (selected) updateCurrency(selected);
                     }}
-                    className="bg-transparent border-none focus:ring-0 text-xs font-bold text-stone-600 cursor-pointer appearance-none pr-4"
+                    className="bg-transparent border-none focus:ring-0 text-xs font-bold text-stone-600 cursor-pointer appearance-none pr-4 max-w-[60px] sm:max-w-none text-ellipsis"
                   >
                     {CURRENCIES.map(c => (
                       <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>
@@ -3042,7 +3042,7 @@ function BakeryApp() {
                     <span>Last Synced: {lastSynced.toLocaleTimeString()}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <button 
                     onClick={refreshData}
                     disabled={isRefreshing}
@@ -3066,7 +3066,7 @@ function BakeryApp() {
                     className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-lg px-3 py-1.5 text-sm hover:bg-stone-100 transition-colors"
                   >
                     <TrendingUp size={16} className={inventorySortOrder === 'desc' ? 'rotate-180' : ''} />
-                    <span className="font-medium uppercase tracking-wider text-[10px]">
+                    <span className="hidden sm:inline font-medium uppercase tracking-wider text-[10px]">
                       {inventorySortOrder === 'asc' ? 'Ascending' : 'Descending'}
                     </span>
                   </button>
@@ -3076,7 +3076,7 @@ function BakeryApp() {
               {/* Material Sections */}
               {categories.map(category => (
                 <div key={category} className="space-y-6">
-                  <div className="flex justify-between items-end">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3">
                     <div>
                       <h2 className="text-2xl font-sans font-bold text-stone-800">{category}</h2>
                       <p className="text-stone-500 text-sm font-sans italic">Track stock levels and costs for {category.toLowerCase()}.</p>
@@ -3375,7 +3375,7 @@ function BakeryApp() {
                           })()}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 border-l border-stone-200 pl-4 ml-4">
+                      <div className="flex flex-wrap items-center gap-2 md:border-l border-stone-200 md:pl-4 md:ml-4">
                         <button 
                           onClick={() => setExpandedRecipeId(expandedRecipeId === item.id ? null : item.id)}
                           title={expandedRecipeId === item.id ? "Close Editor" : "Edit Recipe"}
@@ -3412,7 +3412,7 @@ function BakeryApp() {
                           exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden bg-stone-50/30"
                         >
-                          <div className="p-8 space-y-8 border-t border-stone-100">
+                          <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 border-t border-stone-100">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                               <div className="flex items-center gap-4">
                                 <div className="p-3 bg-white rounded-2xl shadow-sm border border-stone-100">
@@ -3430,7 +3430,7 @@ function BakeryApp() {
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
                                 <button
                                   onClick={() => {
                                     setActiveRecipeItemId(item.id);
@@ -4093,12 +4093,12 @@ function BakeryApp() {
                   <h2 className="text-3xl font-sans font-bold text-stone-800">Settings</h2>
                   <p className="text-stone-500 text-sm italic font-sans">Manage your bakery profile, integrations, and preferences.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                   <div className="relative">
                     <select 
                       value={activeSettingsTab}
                       onChange={(e) => setActiveSettingsTab(e.target.value as any)}
-                      className="appearance-none bg-white border border-stone-200 rounded-2xl px-6 py-3 pr-12 text-sm font-bold uppercase tracking-widest text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm cursor-pointer hover:border-primary/30"
+                      className="appearance-none bg-white border border-stone-200 rounded-2xl px-6 py-3 pr-12 text-sm font-bold uppercase tracking-widest text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm cursor-pointer hover:border-primary/30 w-full sm:w-auto"
                     >
                       <option value="bakery">Bakery Settings</option>
                       <option value="integrations">Integrations</option>
@@ -4112,7 +4112,7 @@ function BakeryApp() {
                   </div>
                   <button 
                     onClick={saveSettings}
-                    className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-primary/20 transform active:scale-95"
+                    className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-primary/20 transform active:scale-95 w-full sm:w-auto"
                   >
                     <Save size={18} />
                     Save Changes
@@ -4134,7 +4134,7 @@ function BakeryApp() {
               <div className="grid grid-cols-1 gap-8">
                 {/* Bakery Settings Section */}
                 {activeSettingsTab === 'bakery' && (
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+                  <div className="bg-white p-4 sm:p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
                     <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <Settings2 size={20} />
@@ -4689,13 +4689,13 @@ function BakeryApp() {
               {/* Finished Goods Stock */}
               {menu.some(m => (m.finishedGoodsStock ?? 0) > 0) && (
                 <div className="bg-white rounded-[2rem] border border-stone-200/50 shadow-sm overflow-hidden">
-                  <div className="px-8 py-5 border-b border-stone-100 flex items-center gap-3">
+                  <div className="px-4 sm:px-8 py-5 border-b border-stone-100 flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                       <Package size={18} />
                     </div>
                     <h3 className="text-base font-bold text-stone-800">Finished Goods In Stock</h3>
                   </div>
-                  <div className="px-8 py-5 flex flex-wrap gap-3">
+                  <div className="px-4 sm:px-8 py-5 flex flex-wrap gap-3">
                     {menu.filter(m => (m.finishedGoodsStock ?? 0) > 0).map(item => (
                       <div key={item.id} className="flex items-center gap-2 bg-stone-50 border border-stone-100 rounded-xl pl-4 pr-2 py-1.5">
                         <span className="text-sm font-bold text-stone-700">{item.name}</span>
