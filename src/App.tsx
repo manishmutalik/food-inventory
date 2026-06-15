@@ -5344,7 +5344,7 @@ function BakeryApp() {
             </div>
             <div className="text-left">
               <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Data Storage</div>
-              <div className="text-xs font-medium text-stone-600">Firebase Cloud Firestore</div>
+              <div className="text-xs font-medium text-stone-600">Secure Cloud Storage</div>
             </div>
           </div>
           <div className="flex items-center gap-2 text-stone-400">
