@@ -1441,9 +1441,7 @@ function BakeryApp() {
   // Drives the header alert badge and the notification toasts.
   const lowStockItems = useMemo(() => {
     return remainingInventory.filter(item => {
-      // absoluteThreshold = e.g. 20% of initialStock
-      const absoluteThreshold = (item.initialStock * (item.threshold || 0)) / 100;
-      return item.remaining <= absoluteThreshold;
+      return item.remaining <= (item.threshold || 0);
     });
   }, [remainingInventory]);
 
