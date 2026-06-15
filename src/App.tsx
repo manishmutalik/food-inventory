@@ -544,6 +544,7 @@ function BakeryApp() {
 
   const [lastSynced, setLastSynced] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAlertDismissed, setIsAlertDismissed] = useState(false);
 
   // ── Integration Bootstrap ─────────────────────────────────────────────────────
   // Polls /api/shopify/status and /api/odoo/status once on mount to hydrate
@@ -1451,6 +1452,7 @@ function BakeryApp() {
   // Toasts auto-dismiss after 5 seconds.
   useEffect(() => {
     if (lowStockItems.length > prevLowStockCount.current) {
+      setIsAlertDismissed(false);
       const newItem = lowStockItems[lowStockItems.length - 1];
       const newNotification = {
         id: Math.random().toString(36).substr(2, 9),
@@ -2621,7 +2623,7 @@ function BakeryApp() {
   const SidebarTabButton = ({ id, label, icon: Icon }: { id: typeof activeTab, label: string, icon: any }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-bold transition-all group ${
+      className={`relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-bold transition-all group ${
         activeTab === id 
           ? 'bg-amber-50 text-amber-600 shadow-sm border border-amber-100/50' 
           : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50'
@@ -2629,6 +2631,9 @@ function BakeryApp() {
     >
       <Icon size={20} className={`transition-transform duration-300 ${activeTab === id ? 'scale-110' : 'group-hover:scale-110'}`} />
       <span>{label}</span>
+      {id === 'inventory' && lowStockItems.length > 0 && !isAlertDismissed && (
+        <span className="absolute right-4 w-2 h-2 bg-rose-500 rounded-full" />
+      )}
       {activeTab === id && (
         <motion.div 
           layoutId="activeSidebarTab"
@@ -2648,7 +2653,12 @@ function BakeryApp() {
           : 'text-stone-400 hover:text-stone-600'
       }`}
     >
-      <Icon size={22} className={`transition-transform duration-300 ${activeTab === id ? '-translate-y-1' : ''}`} />
+      <div className="relative">
+        <Icon size={22} className={`transition-transform duration-300 ${activeTab === id ? '-translate-y-1' : ''}`} />
+        {id === 'inventory' && lowStockItems.length > 0 && !isAlertDismissed && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+        )}
+      </div>
       <span className="text-[10px] font-bold tracking-wide">{label}</span>
       {activeTab === id && (
         <motion.div 
@@ -2934,6 +2944,22 @@ function BakeryApp() {
             </div>
             
             <div className="flex items-center gap-2 sm:gap-6 min-w-0 shrink">
+              {lowStockItems.length > 0 && !isAlertDismissed && (
+                <button 
+                  onClick={() => {
+                    setActiveTab('inventory');
+                    setIsAlertDismissed(true);
+                  }}
+                  className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group shrink-0"
+                  title={`${lowStockItems.length} items low on stock`}
+                >
+                  <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
+                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                    {lowStockItems.length}
+                  </span>
+                </button>
+              )}
+
               <div className="flex items-center gap-2 sm:gap-4">
                 <div className="flex items-center gap-1 sm:gap-2 bg-stone-50 border border-stone-200 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 shrink-0">
                   <Globe size={14} className="text-stone-400 hidden sm:block" />
@@ -2952,19 +2978,6 @@ function BakeryApp() {
                 </div>
               </div>
 
-              {lowStockItems.length > 0 && (
-                <button 
-                  onClick={() => setActiveTab('inventory')}
-                  className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group shrink-0"
-                  title={`${lowStockItems.length} items low on stock`}
-                >
-                  <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
-                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                    {lowStockItems.length}
-                  </span>
-                </button>
-              )}
-              
               <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-6 border-l border-stone-200 shrink-0">
                 <div className="text-right hidden sm:block">
                   <div className="text-sm font-bold text-stone-800 leading-none mb-1 font-sans">{user?.name}</div>
