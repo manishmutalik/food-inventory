@@ -251,6 +251,8 @@ interface RawMaterial {
   category: string;
   threshold?: number;
   dateAdded: string;
+  expiryDate?: string; // YYYY-MM-DD — expiry of the current/latest stock batch
+  gstRate?: number;
 }
 
 export interface WastageLog {
@@ -1463,7 +1465,9 @@ function BakeryApp() {
   // Drives the header alert badge and the notification toasts.
   const lowStockItems = useMemo(() => {
     return remainingInventory.filter(item => {
-      return item.remaining <= (item.threshold || 0);
+      // Only alert when a threshold has been explicitly set (> 0)
+      // to avoid false alerts on newly added items with 0 stock.
+      return (item.threshold ?? 0) > 0 && item.remaining <= item.threshold!;
     });
   }, [remainingInventory]);
 
@@ -1910,6 +1914,7 @@ function BakeryApp() {
   const [restockMaterial, setRestockMaterial] = useState<RawMaterial | null>(null);
   const [restockQty, setRestockQty] = useState<string>('');
   const [restockBaseTotal, setRestockBaseTotal] = useState<string>('');
+  const [restockExpiryDate, setRestockExpiryDate] = useState<string>('');
 
   /**
    * Processes a material restock and recalculates its Moving Average Cost (MAC).
@@ -1934,14 +1939,19 @@ function BakeryApp() {
       const newMAC = newStock > 0 ? (oldTotalValue + baseTotal) / newStock : 0;
       
       const userId = auth.currentUser.uid;
-      await setDoc(doc(db, 'users', userId, 'materials', restockMaterial.id), {
+      const restockUpdate: Record<string, any> = {
         initialStock: newStock,
         costPerUnit: Number(newMAC.toFixed(2))
-      }, { merge: true });
+      };
+      if (restockExpiryDate) {
+        restockUpdate.expiryDate = restockExpiryDate;
+      }
+      await setDoc(doc(db, 'users', userId, 'materials', restockMaterial.id), restockUpdate, { merge: true });
       
       setRestockMaterial(null);
       setRestockQty('');
       setRestockBaseTotal('');
+      setRestockExpiryDate('');
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `users/${auth.currentUser.uid}/materials/${restockMaterial.id}`);
     }
@@ -3231,12 +3241,13 @@ function BakeryApp() {
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Current Stock</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest" title="Alert when current stock drops below this amount">Threshold (Alert)</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Cost / Unit</th>
+                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest" title="Expiry date of the current stock batch">Expiry Date</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest w-20"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-50">
                         {sortedRemainingInventory.filter(m => m.category === category).map((mat) => {
-                          const isLowStock = mat.remaining <= (mat.threshold || 0);
+                          const isLowStock = (mat.threshold ?? 0) > 0 && mat.remaining <= mat.threshold!;
                           
                           return (
                             <tr key={mat.id} className={`hover:bg-stone-50/30 transition-colors ${isLowStock ? 'bg-rose-50/20' : ''}`}>
@@ -3297,10 +3308,40 @@ function BakeryApp() {
                                   />
                                 </div>
                               </td>
+                              <td className="px-6 py-4">
+                                {(() => {
+                                  const today = new Date();
+                                  today.setHours(0,0,0,0);
+                                  const expDate = mat.expiryDate ? new Date(mat.expiryDate) : null;
+                                  if (expDate) expDate.setHours(0,0,0,0);
+                                  const daysLeft = expDate ? Math.ceil((expDate.getTime() - today.getTime()) / 86400000) : null;
+                                  const isExpiringSoon = daysLeft !== null && daysLeft <= 3 && daysLeft >= 0;
+                                  const isExpired = daysLeft !== null && daysLeft < 0;
+                                  return (
+                                    <div className="flex flex-col gap-1">
+                                      <input
+                                        type="date"
+                                        value={mat.expiryDate || ''}
+                                        onChange={(e) => updateMaterial(mat.id, 'expiryDate', e.target.value)}
+                                        className={`w-36 border rounded-xl px-2 py-1.5 text-xs font-mono focus:ring-2 outline-none transition-all ${
+                                          isExpired
+                                            ? 'bg-rose-50 border-rose-300 text-rose-700 focus:ring-rose-400'
+                                            : isExpiringSoon
+                                            ? 'bg-amber-50 border-amber-300 text-amber-700 focus:ring-amber-400'
+                                            : 'bg-stone-50/50 border-stone-100 text-stone-600 focus:ring-primary/20'
+                                        }`}
+                                        title="Expiry date of current stock batch"
+                                      />
+                                      {isExpired && <span className="text-[9px] font-bold text-rose-600 uppercase tracking-wider">Expired</span>}
+                                      {!isExpired && isExpiringSoon && <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider">{daysLeft}d left</span>}
+                                    </div>
+                                  );
+                                })()}
+                              </td>
                               <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
                                   <button 
-                                    onClick={() => setRestockMaterial(mat)}
+                                    onClick={() => { setRestockMaterial(mat); setRestockExpiryDate(mat.expiryDate || ''); }}
                                     className="flex items-center gap-1 text-emerald-500 hover:text-emerald-600 transition-colors px-2 py-1.5 hover:bg-emerald-50 rounded-xl text-[10px] font-bold uppercase tracking-wider"
                                     title="Restock this item"
                                   >
@@ -5611,6 +5652,15 @@ function BakeryApp() {
                         onChange={(e) => setRestockBaseTotal(e.target.value)}
                         placeholder="0.00"
                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Expiry Date of This Batch</label>
+                      <input
+                        type="date"
+                        value={restockExpiryDate}
+                        onChange={(e) => setRestockExpiryDate(e.target.value)}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-mono"
                       />
                     </div>
                   </div>
