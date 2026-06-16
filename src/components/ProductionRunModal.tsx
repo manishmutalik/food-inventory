@@ -21,6 +21,7 @@ export interface ProductionRun {
   notes?: string;
   costTotal: number;       // Material cost snapshotted at creation time (not live-calculated)
   createdAt: number;       // Unix ms timestamp
+  expiryDate?: string;     // YYYY-MM-DD
 }
 
 interface MenuItem {

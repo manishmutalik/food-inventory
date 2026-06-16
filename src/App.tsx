@@ -232,15 +232,35 @@ class ErrorBoundary extends React.Component<any, any> {
  * `threshold` is a percentage (0–100) of initialStock below which a low-stock
  * alert is triggered.
  */
+export interface InventoryBatch {
+  id: string;
+  originalQuantity: number;
+  remainingQuantity: number;
+  expiryDate: string; // YYYY-MM-DD
+  costPerUnit: number;
+  dateAdded: string;
+}
+
 interface RawMaterial {
   id: string;
   name: string;
   unit: string;
-  initialStock: number;
+  initialStock: number; // Sum of all batch remaining quantities
+  batches?: InventoryBatch[];
   costPerUnit: number;
   category: string;
   threshold?: number;
   dateAdded: string;
+}
+
+export interface WastageLog {
+  id: string;
+  type: 'material' | 'recipe';
+  itemId: string;
+  quantity: number;
+  cost: number;
+  date: string;
+  reason: string;
 }
 
 /**
@@ -266,6 +286,7 @@ interface MenuItem {
   sellingPrice: number;
   servings?: number;
   finishedGoodsStock?: number;
+  shelfLifeDays?: number;
   emoji?: string;
 }
 
@@ -453,6 +474,7 @@ function BakeryApp() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [experiments, setExperiments] = useState<RecipeExperiment[]>([]);
   const [productionRuns, setProductionRuns] = useState<ProductionRun[]>([]);
+  const [wastageLogs, setWastageLogs] = useState<WastageLog[]>([]);
   const [isProductionRunModalOpen, setIsProductionRunModalOpen] = useState(false);
   const [productionFilterRecipe, setProductionFilterRecipe] = useState('');
   const [productionFilterPurpose, setProductionFilterPurpose] = useState('');
@@ -1808,6 +1830,83 @@ function BakeryApp() {
   // ─── Restock Modal State ────────────────────────────────────────────────────────
   // State for the Restock Material modal, declared here so it can share scope
   // with the materials array and update Material handler.
+  type DiscardTarget = { id: string; name: string; type: 'material' | 'recipe'; batchId?: string; maxQty: number; unit: string; costPerUnit: number };
+  const [discardTarget, setDiscardTarget] = useState<DiscardTarget | null>(null);
+  const [discardQty, setDiscardQty] = useState('');
+  const [discardReason, setDiscardReason] = useState('');
+
+  const handleDiscard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser || !discardTarget || !discardQty) return;
+    const qty = Number(discardQty);
+    if (qty <= 0) return;
+
+    try {
+      const userId = auth.currentUser.uid;
+      const totalCost = qty * discardTarget.costPerUnit;
+      
+      const batchOp = writeBatch(db);
+      
+      const logId = 'waste_' + Date.now();
+      batchOp.set(doc(db, 'users', userId, 'wastageLogs', logId), {
+        id: logId,
+        type: discardTarget.type,
+        itemId: discardTarget.id,
+        quantity: qty,
+        cost: totalCost,
+        date: new Date().toISOString().split('T')[0],
+        reason: discardReason || 'Discarded'
+      });
+      
+      if (discardTarget.type === 'material') {
+        const mat = materials.find(m => m.id === discardTarget.id);
+        if (mat) {
+           let amountToDeduct = qty;
+           const newBatches = Array.isArray(mat.batches) ? [...mat.batches].map(b => ({...b})) : [];
+           
+           if (discardTarget.batchId) {
+             const b = newBatches.find(x => x.id === discardTarget.batchId);
+             if (b) b.remainingQuantity = Math.max(0, b.remainingQuantity - amountToDeduct);
+           } else {
+             newBatches.sort((a,b) => a.expiryDate.localeCompare(b.expiryDate));
+             for (const b of newBatches) {
+               if (amountToDeduct <= 0) break;
+               if (b.remainingQuantity >= amountToDeduct) {
+                 b.remainingQuantity -= amountToDeduct;
+                 amountToDeduct = 0;
+               } else {
+                 amountToDeduct -= b.remainingQuantity;
+                 b.remainingQuantity = 0;
+               }
+             }
+           }
+           
+           const newStock = parseFloat((mat.initialStock - qty).toFixed(4));
+           batchOp.set(doc(db, 'users', userId, 'materials', mat.id), {
+             initialStock: newStock,
+             batches: newBatches
+           }, { merge: true });
+        }
+      } else {
+         const menuIt = menu.find(m => m.id === discardTarget.id);
+         if (menuIt) {
+            batchOp.set(doc(db, 'users', userId, 'menu', menuIt.id), {
+              finishedGoodsStock: Math.max(0, (menuIt.finishedGoodsStock || 0) - qty)
+            }, { merge: true });
+         }
+      }
+      
+      await batchOp.commit();
+      
+      setDiscardTarget(null);
+      setDiscardQty('');
+      setDiscardReason('');
+      toast.success('Wastage logged successfully');
+    } catch(err) {
+      handleFirestoreError(err, OperationType.WRITE, `users/${auth.currentUser?.uid}/wastageLogs`);
+    }
+  };
+
   const [restockMaterial, setRestockMaterial] = useState<RawMaterial | null>(null);
   const [restockQty, setRestockQty] = useState<string>('');
   const [restockBaseTotal, setRestockBaseTotal] = useState<string>('');
@@ -2881,6 +2980,7 @@ function BakeryApp() {
             <SidebarTabButton id="production" label="Production" icon={Factory} />
             <SidebarTabButton id="menu" label="Recipes" icon={Utensils} />
             <SidebarTabButton id="experiments" label="R&D" icon={FlaskConical} />
+            <SidebarTabButton id="wastage" label="Wastage" icon={Trash2} />
           </nav>
         </div>
 
@@ -5388,7 +5488,82 @@ function BakeryApp() {
           }}
         />
 
-        {/* Restock Modal */}
+        {/* Discard Modal */}
+      <AnimatePresence>
+        {discardTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+              onClick={() => setDiscardTarget(null)}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md bg-white rounded-[10px] sm:rounded-[15px] shadow-2xl overflow-y-auto max-h-[90vh] border border-stone-200/50"
+            >
+              <div className="p-8">
+                <div className="w-16 h-16 bg-rose-50 rounded-xl flex items-center justify-center mb-6">
+                  <Trash2 size={32} className="text-rose-500" />
+                </div>
+                <h3 className="text-2xl font-bold text-stone-800 mb-2">Discard {discardTarget.name}</h3>
+                <p className="text-stone-500 text-sm font-sans italic mb-6">
+                  Log wasted stock and track cost. Max: {discardTarget.maxQty} {discardTarget.unit}
+                </p>
+
+                <form onSubmit={handleDiscard}>
+                  <div className="space-y-4 mb-8">
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Quantity to Discard ({discardTarget.unit})</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        max={discardTarget.maxQty}
+                        required
+                        value={discardQty}
+                        onChange={(e) => setDiscardQty(e.target.value)}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Reason</label>
+                      <input
+                        type="text"
+                        required
+                        value={discardReason}
+                        onChange={(e) => setDiscardReason(e.target.value)}
+                        placeholder="e.g. Expired, Spilled, Burnt"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDiscardTarget(null)}
+                      className="flex-1 px-6 py-4 rounded-xl text-xs font-bold text-stone-500 hover:bg-stone-50 transition-colors uppercase tracking-widest border border-stone-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 px-6 py-4 rounded-xl text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 transition-colors uppercase tracking-widest shadow-lg shadow-rose-500/20"
+                    >
+                      Confirm Discard
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Restock Modal */}
         {restockMaterial && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
@@ -5544,6 +5719,7 @@ function BakeryApp() {
           <BottomNavButton id="production" label="Runs" icon={Factory} />
           <BottomNavButton id="menu" label="Recipes" icon={Utensils} />
           <BottomNavButton id="experiments" label="R&D" icon={FlaskConical} />
+          <BottomNavButton id="wastage" label="Waste" icon={Trash2} />
           <BottomNavButton id="settings" label="More" icon={Settings} />
         </nav>
       </div>
