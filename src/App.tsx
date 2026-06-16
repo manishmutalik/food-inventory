@@ -202,15 +202,15 @@ class ErrorBoundary extends React.Component<any, any> {
 
       return (
         <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-stone-200 max-w-md w-full text-center">
-            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto mb-6">
+          <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] shadow-xl border border-stone-200 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500 mx-auto mb-6">
               <AlertCircle size={32} />
             </div>
             <h2 className="text-xl font-bold text-stone-800 mb-2">Application Error</h2>
             <p className="text-stone-600 mb-6">{displayMessage}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="w-full bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20"
+              className="w-full bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20"
             >
               Reload Application
             </button>
@@ -2621,7 +2621,7 @@ function BakeryApp() {
   const SidebarTabButton = ({ id, label, icon: Icon }: { id: typeof activeTab, label: string, icon: any }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-bold transition-all group ${
+      className={`relative flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-bold transition-all group ${
         activeTab === id 
           ? 'bg-amber-50 text-amber-600 shadow-sm border border-amber-100/50' 
           : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50'
@@ -2690,10 +2690,10 @@ function BakeryApp() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-8 rounded-[2.5rem] border border-stone-200 shadow-xl max-w-md w-full"
+          className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200 shadow-xl max-w-md w-full"
         >
           <div className="flex flex-col items-center mb-8">
-            <div className="bg-primary p-4 rounded-2xl text-white mb-4 shadow-lg shadow-primary/20">
+            <div className="bg-primary p-4 rounded-xl text-white mb-4 shadow-lg shadow-primary/20">
               <Utensils size={32} />
             </div>
             <h2 className="text-2xl font-bold text-stone-800 font-sans">Bakery Manager</h2>
@@ -2831,9 +2831,9 @@ function BakeryApp() {
   }
 
   const StatCard = ({ label, value, icon: Icon, color, trend, subtext }: { label: string, value: string, icon: any, color: string, trend?: { value: string, up: boolean }, subtext?: string }) => (
-    <div className="bg-white p-6 rounded-3xl border border-stone-200/50 shadow-sm bento-item flex flex-col justify-between">
+    <div className="bg-white p-6 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm bento-item flex flex-col justify-between">
       <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-2xl ${color} shadow-lg shadow-current/10`}>
+        <div className={`p-3 rounded-xl ${color} shadow-lg shadow-current/10`}>
           <Icon size={24} />
         </div>
         {trend && (
@@ -2864,7 +2864,7 @@ function BakeryApp() {
           <div className="px-6 mb-8">
             <button 
               onClick={() => setIsProductionRunModalOpen(true)}
-              className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-2xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 font-bold"
+              className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 font-bold"
             >
               <Factory size={20} />
               New Production Run
@@ -2902,7 +2902,7 @@ function BakeryApp() {
                 initial={{ opacity: 0, x: 50, scale: 0.9 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 20, scale: 0.9 }}
-                className="bg-stone-900/90 backdrop-blur-md text-white px-4 sm:px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 pointer-events-auto border border-white/10 max-w-[calc(100vw-2rem)] sm:max-w-md w-full"
+                className="bg-stone-900/90 backdrop-blur-md text-white px-4 sm:px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 pointer-events-auto border border-white/10 max-w-[calc(100vw-2rem)] sm:max-w-md w-full"
               >
                 <div className="bg-rose-500 p-1.5 rounded-lg shadow-lg shadow-rose-500/20">
                   <AlertCircle size={16} />
@@ -2924,11 +2924,11 @@ function BakeryApp() {
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               {settings.logo ? (
                 <div className="relative group shrink-0">
-                  <img src={settings.logo} alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-stone-100 shadow-sm transition-transform group-hover:scale-105" />
-                  <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/5" />
+                  <img src={settings.logo} alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border-2 border-stone-100 shadow-sm transition-transform group-hover:scale-105" />
+                  <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/5" />
                 </div>
               ) : (
-                <div className="bg-primary p-2 sm:p-3 rounded-2xl text-white shadow-lg shadow-primary/20 shrink-0">
+                <div className="bg-primary p-2 sm:p-3 rounded-xl text-white shadow-lg shadow-primary/20 shrink-0">
                   <Utensils size={24} className="sm:w-[28px] sm:h-[28px]" />
                 </div>
               )}
@@ -2982,7 +2982,7 @@ function BakeryApp() {
                   <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{user?.email}</div>
                 </div>
                 <div className="relative group">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shadow-sm">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shadow-sm">
                     {user?.name?.charAt(0) || 'B'}
                   </div>
                   <button 
@@ -3015,7 +3015,7 @@ function BakeryApp() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-rose-50 border border-rose-100 rounded-3xl p-6 space-y-4 shadow-sm"
+                  className="bg-rose-50 border border-rose-100 rounded-[10px] sm:rounded-[15px] p-6 space-y-4 shadow-sm"
                 >
                   <div className="flex items-center gap-3 text-rose-600">
                     <AlertCircle size={24} />
@@ -3023,7 +3023,7 @@ function BakeryApp() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {lowStockItems.map(item => (
-                      <div key={item.id} className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm">
+                      <div key={item.id} className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-xl p-4 flex flex-col justify-between shadow-sm">
                         <div>
                           <div className="text-[10px] font-bold text-rose-800 uppercase tracking-widest mb-1">{item.name}</div>
                           <div className="text-2xl font-mono font-bold text-rose-600">
@@ -3041,7 +3041,7 @@ function BakeryApp() {
               )}
 
               {/* Sorting & Refresh Options */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-stone-200/50 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-stone-200/50 shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-stone-600">
                     <Filter size={18} />
@@ -3121,7 +3121,7 @@ function BakeryApp() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                     <table className="w-full min-w-[640px] text-left border-collapse">
                       <thead>
@@ -3243,7 +3243,7 @@ function BakeryApp() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                     <table className="w-full min-w-[400px] text-left border-collapse">
                       <thead>
@@ -3308,10 +3308,10 @@ function BakeryApp() {
 
               <div className="grid gap-6">
                 {menu.map((item) => (
-                  <div key={item.id} className="bg-white rounded-3xl border border-stone-200/50 shadow-sm overflow-hidden transition-all hover:shadow-md">
+                  <div key={item.id} className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden transition-all hover:shadow-md">
                     <div className="px-6 py-5 bg-stone-50/50 border-b border-stone-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className="relative w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl shrink-0 overflow-hidden cursor-text hover:bg-primary/20 transition-colors">
+                        <div className="relative w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-2xl shrink-0 overflow-hidden cursor-text hover:bg-primary/20 transition-colors">
                           <input 
                             type="text"
                             maxLength={2}
@@ -3426,7 +3426,7 @@ function BakeryApp() {
                           <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 border-t border-stone-100">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                               <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white rounded-2xl shadow-sm border border-stone-100">
+                                <div className="p-3 bg-white rounded-xl shadow-sm border border-stone-100">
                                   <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Recipe Cost</h4>
                                   <div className="flex items-center gap-1.5 text-primary">
                                     <span className="text-sm font-bold">{currency.symbol}</span>
@@ -3486,7 +3486,7 @@ function BakeryApp() {
                                     const ingredientCost = convertedAmount * (mat?.costPerUnit || 0);
                                     
                                     return (
-                                      <div key={idx} className="group flex items-center gap-3 bg-white p-4 rounded-2xl border border-stone-100 shadow-sm transition-all hover:border-primary/20">
+                                      <div key={idx} className="group flex items-center gap-3 bg-white p-4 rounded-xl border border-stone-100 shadow-sm transition-all hover:border-primary/20">
                                         <div className="flex-1">
                                           <select 
                                             value={req.materialId || ''}
@@ -3534,7 +3534,7 @@ function BakeryApp() {
                                     );
                                   })}
                                   {item.recipe.filter(req => materials.find(m => m.id === req.materialId)?.category !== 'Packaging Materials').length === 0 && (
-                                    <div className="text-center py-8 border-2 border-dashed border-stone-200 rounded-3xl text-stone-400 text-[10px] uppercase font-bold tracking-widest bg-white/50">
+                                    <div className="text-center py-8 border-2 border-dashed border-stone-200 rounded-[10px] sm:rounded-[15px] text-stone-400 text-[10px] uppercase font-bold tracking-widest bg-white/50">
                                       No ingredients added
                                     </div>
                                   )}
@@ -3561,7 +3561,7 @@ function BakeryApp() {
                                     const ingredientCost = convertedAmount * (mat?.costPerUnit || 0);
                                     
                                     return (
-                                      <div key={idx} className="group flex items-center gap-3 bg-white p-4 rounded-2xl border border-stone-100 shadow-sm transition-all hover:border-primary/20">
+                                      <div key={idx} className="group flex items-center gap-3 bg-white p-4 rounded-xl border border-stone-100 shadow-sm transition-all hover:border-primary/20">
                                         <div className="flex-1">
                                           <select 
                                             value={req.materialId || ''}
@@ -3607,7 +3607,7 @@ function BakeryApp() {
                                     );
                                   })}
                                   {item.recipe.filter(req => materials.find(m => m.id === req.materialId)?.category === 'Packaging Materials').length === 0 && (
-                                    <div className="text-center py-8 border-2 border-dashed border-stone-200 rounded-3xl text-stone-400 text-[10px] uppercase font-bold tracking-widest bg-white/50">
+                                    <div className="text-center py-8 border-2 border-dashed border-stone-200 rounded-[10px] sm:rounded-[15px] text-stone-400 text-[10px] uppercase font-bold tracking-widest bg-white/50">
                                       No packaging added
                                     </div>
                                   )}
@@ -3641,7 +3641,7 @@ function BakeryApp() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                   {/* Date range pickers */}
-                  <div className="flex flex-wrap items-center gap-2 bg-white border border-stone-200/50 rounded-2xl px-3 py-2 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-2 bg-white border border-stone-200/50 rounded-xl px-3 py-2 shadow-sm">
                     <Calendar size={15} className="text-primary shrink-0" />
                     <input
                       type="date"
@@ -3736,12 +3736,12 @@ function BakeryApp() {
                 const totalItems = rangeOrders.reduce((s, o) => s + o.quantity, 0);
                 return rangeOrders.length > 0 ? (
                   <div className="flex flex-wrap gap-4">
-                    <div className="bg-white border border-stone-200/50 rounded-2xl px-5 py-3 shadow-sm flex items-center gap-3">
+                    <div className="bg-white border border-stone-200/50 rounded-xl px-5 py-3 shadow-sm flex items-center gap-3">
                       <ShoppingBag size={16} className="text-primary" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Orders</span>
                       <span className="text-lg font-bold text-stone-800">{rangeOrders.length}</span>
                     </div>
-                    <div className="bg-white border border-stone-200/50 rounded-2xl px-5 py-3 shadow-sm flex items-center gap-3">
+                    <div className="bg-white border border-stone-200/50 rounded-xl px-5 py-3 shadow-sm flex items-center gap-3">
                       <Package size={16} className="text-emerald-500" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Items Sold</span>
                       <span className="text-lg font-bold text-stone-800">{totalItems}</span>
@@ -3751,7 +3751,7 @@ function BakeryApp() {
               })()}
 
               {/* Orders table */}
-              <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
                 {(() => {
                   const rangeOrders = orders
                     .filter(o => o.date >= orderFilterStart && o.date <= orderFilterEnd)
@@ -3760,7 +3760,7 @@ function BakeryApp() {
                   if (rangeOrders.length === 0) {
                     return (
                       <div className="text-center py-20 px-8">
-                        <div className="w-20 h-20 bg-stone-50 rounded-3xl shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
+                        <div className="w-20 h-20 bg-stone-50 rounded-[10px] sm:rounded-[15px] shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
                           <ClipboardList size={40} />
                         </div>
                         <h3 className="text-xl font-sans font-bold text-stone-800 mb-2">No orders in this range</h3>
@@ -3774,7 +3774,7 @@ function BakeryApp() {
                             setIsAddOrderModalOpen(true);
                           }}
                           disabled={menu.length === 0}
-                          className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95 disabled:opacity-50"
+                          className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95 disabled:opacity-50"
                         >
                           <Plus size={18} />
                           Log First Sale
@@ -3816,7 +3816,7 @@ function BakeryApp() {
                           </div>
                           <div className="px-3 sm:px-8 pb-4 space-y-2">
                             {byDate[date].map(order => (
-                              <div key={order.id} className="group p-3 bg-stone-50/50 rounded-2xl border border-stone-100 hover:border-primary/20 transition-all">
+                              <div key={order.id} className="group p-3 bg-stone-50/50 rounded-xl border border-stone-100 hover:border-primary/20 transition-all">
                                 {/* Mobile: stacked card layout */}
                                 <div className="flex flex-col gap-2 sm:hidden">
                                   <select
@@ -3914,7 +3914,7 @@ function BakeryApp() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 20 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                  className="bg-white rounded-[10px] sm:rounded-[15px] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
                 >
                   {/* Modal Header */}
                   <div className="flex items-center justify-between px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-stone-100">
@@ -3934,7 +3934,7 @@ function BakeryApp() {
                     {/* Date */}
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Order Date</label>
-                      <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3">
                         <Calendar size={16} className="text-primary shrink-0" />
                         <input
                           type="date"
@@ -3954,7 +3954,7 @@ function BakeryApp() {
                           placeholder="e.g. John Smith"
                           value={modalCustomerName}
                           onChange={(e) => setModalCustomerName(e.target.value)}
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -3964,7 +3964,7 @@ function BakeryApp() {
                           placeholder="e.g. 555-0100"
                           value={modalCustomerPhone}
                           onChange={(e) => setModalCustomerPhone(e.target.value)}
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -3985,7 +3985,7 @@ function BakeryApp() {
                         {modalLineItems.map((line, idx) => {
                           const selectedItem = menu.find(m => m.id === line.menuItemId);
                           return (
-                            <div key={idx} className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-2xl p-3">
+                            <div key={idx} className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-xl p-3">
                               <select
                                 value={line.menuItemId}
                                 onChange={(e) => setModalLineItems(prev => prev.map((l, i) => i === idx ? { ...l, menuItemId: e.target.value } : l))}
@@ -4037,7 +4037,7 @@ function BakeryApp() {
                   <div className="px-4 sm:px-8 pb-6 sm:pb-8 flex gap-3">
                     <button
                       onClick={() => setIsAddOrderModalOpen(false)}
-                      className="flex-1 py-3 rounded-2xl border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all"
+                      className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 font-bold text-sm hover:bg-stone-50 transition-all"
                     >
                       Cancel
                     </button>
@@ -4072,7 +4072,7 @@ function BakeryApp() {
                           setIsSavingOrder(false);
                         }
                       }}
-                      className="flex-1 py-3 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+                      className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
                     >
                       {isSavingOrder ? 'Saving…' : `Save ${modalLineItems.filter(l => l.menuItemId).length > 1 ? `${modalLineItems.filter(l => l.menuItemId).length} Items` : 'Order'}`}
                     </button>
@@ -4101,7 +4101,7 @@ function BakeryApp() {
                     <select 
                       value={activeSettingsTab}
                       onChange={(e) => setActiveSettingsTab(e.target.value as any)}
-                      className="appearance-none bg-white border border-stone-200 rounded-2xl px-6 py-3 pr-12 text-sm font-bold uppercase tracking-widest text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm cursor-pointer hover:border-primary/30 w-full sm:w-auto"
+                      className="appearance-none bg-white border border-stone-200 rounded-xl px-6 py-3 pr-12 text-sm font-bold uppercase tracking-widest text-stone-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm cursor-pointer hover:border-primary/30 w-full sm:w-auto"
                     >
                       <option value="bakery">Bakery Settings</option>
                       <option value="integrations">Integrations</option>
@@ -4115,7 +4115,7 @@ function BakeryApp() {
                   </div>
                   <button 
                     onClick={saveSettings}
-                    className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-primary/20 transform active:scale-95 w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20 transform active:scale-95 w-full sm:w-auto"
                   >
                     <Save size={18} />
                     Save Changes
@@ -4127,7 +4127,7 @@ function BakeryApp() {
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3 text-emerald-700 shadow-sm"
+                  className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex items-center gap-3 text-emerald-700 shadow-sm"
                 >
                   <CheckCircle2 size={20} />
                   <p className="text-sm font-bold uppercase tracking-widest">Settings saved successfully!</p>
@@ -4137,7 +4137,7 @@ function BakeryApp() {
               <div className="grid grid-cols-1 gap-8">
                 {/* Bakery Settings Section */}
                 {activeSettingsTab === 'bakery' && (
-                  <div className="bg-white p-4 sm:p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+                  <div className="bg-white p-4 sm:p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm space-y-8">
                     <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <Settings2 size={20} />
@@ -4155,7 +4155,7 @@ function BakeryApp() {
                           type="text" 
                           value={settings.name}
                           onChange={(e) => updateSettingsField('name', e.target.value)}
-                          className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-lg"
+                          className="w-full bg-stone-50/50 border border-stone-200 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-lg"
                           placeholder="The Sourdough Loft"
                         />
                       </div>
@@ -4165,7 +4165,7 @@ function BakeryApp() {
                           type="text" 
                           value={settings.phone}
                           onChange={(e) => updateSettingsField('phone', e.target.value)}
-                          className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-lg"
+                          className="w-full bg-stone-50/50 border border-stone-200 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-lg"
                           placeholder="+1 (555) 000-0000"
                         />
                       </div>
@@ -4175,7 +4175,7 @@ function BakeryApp() {
                           type="text" 
                           value={settings.address}
                           onChange={(e) => updateSettingsField('address', e.target.value)}
-                          className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl px-5 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-lg"
+                          className="w-full bg-stone-50/50 border border-stone-200 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-lg"
                           placeholder="123 Flour St, Bread City"
                         />
                       </div>
@@ -4185,7 +4185,7 @@ function BakeryApp() {
 
                 {/* Integrations Section */}
                 {activeSettingsTab === 'integrations' && (
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+                  <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm space-y-8">
                     <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <Puzzle size={20} />
@@ -4197,10 +4197,10 @@ function BakeryApp() {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className={`p-6 rounded-3xl border transition-all duration-300 ${shopifyStatus.connected ? 'bg-emerald-50/30 border-emerald-100 shadow-sm shadow-emerald-500/5' : 'bg-stone-50/50 border-stone-100'}`}>
+                      <div className={`p-6 rounded-[10px] sm:rounded-[15px] border transition-all duration-300 ${shopifyStatus.connected ? 'bg-emerald-50/30 border-emerald-100 shadow-sm shadow-emerald-500/5' : 'bg-stone-50/50 border-stone-100'}`}>
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center gap-4">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors duration-300 ${shopifyStatus.connected ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-stone-100 text-stone-600'}`}>
+                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-sm transition-colors duration-300 ${shopifyStatus.connected ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-stone-100 text-stone-600'}`}>
                               <Store size={28} />
                             </div>
                             <div>
@@ -4232,7 +4232,7 @@ function BakeryApp() {
                         {!shopifyStatus.connected ? (
                           <div className="space-y-5">
                             {!shopifyConfig.hasEnvCredentials && (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-stone-200/60 rounded-2xl shadow-sm relative overflow-hidden group">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-stone-200/60 rounded-xl shadow-sm relative overflow-hidden group">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                                 <div className="col-span-full mb-1">
                                   <div className="flex items-center gap-2 mb-1">
@@ -4265,7 +4265,7 @@ function BakeryApp() {
                             )}
 
                             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                              <div className="flex items-center gap-3 bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-sm flex-1 group focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                              <div className="flex items-center gap-3 bg-white border border-stone-200 rounded-xl px-4 py-3 shadow-sm flex-1 group focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
                                 <Globe size={16} className="text-stone-300 group-focus-within:text-primary transition-colors" />
                                 <input 
                                   type="text" 
@@ -4279,7 +4279,7 @@ function BakeryApp() {
                               <button 
                                 onClick={connectShopify}
                                 disabled={isConnectingShopify}
-                                className={`flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-primary/20 transform active:scale-95 ${isConnectingShopify ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20 transform active:scale-95 ${isConnectingShopify ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
                                 {isConnectingShopify ? (
                                   <>
@@ -4296,7 +4296,7 @@ function BakeryApp() {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-3 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-100/50">
+                          <div className="flex items-center gap-3 p-4 bg-emerald-500/5 rounded-xl border border-emerald-100/50">
                             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                               <CheckCircle2 size={20} />
                             </div>
@@ -4308,10 +4308,10 @@ function BakeryApp() {
                         )}
                       </div>
 
-                      <div className={`p-6 rounded-3xl border transition-all duration-300 ${odooStatus.connected ? 'bg-emerald-50/30 border-emerald-100 shadow-sm shadow-emerald-500/5' : 'bg-stone-50/50 border-stone-100'}`}>
+                      <div className={`p-6 rounded-[10px] sm:rounded-[15px] border transition-all duration-300 ${odooStatus.connected ? 'bg-emerald-50/30 border-emerald-100 shadow-sm shadow-emerald-500/5' : 'bg-stone-50/50 border-stone-100'}`}>
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center gap-4">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors duration-300 ${odooStatus.connected ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-stone-100 text-stone-600'}`}>
+                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-sm transition-colors duration-300 ${odooStatus.connected ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-stone-100 text-stone-600'}`}>
                               <Database size={28} />
                             </div>
                             <div>
@@ -4342,7 +4342,7 @@ function BakeryApp() {
 
                         {!odooStatus.connected ? (
                           <div className="space-y-5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-stone-200/60 rounded-2xl shadow-sm relative overflow-hidden group">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-stone-200/60 rounded-xl shadow-sm relative overflow-hidden group">
                               <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                               <div className="col-span-full mb-1">
                                 <div className="flex items-center gap-2 mb-1">
@@ -4396,7 +4396,7 @@ function BakeryApp() {
                             <button 
                               onClick={connectOdoo}
                               disabled={isConnectingOdoo}
-                              className={`w-full flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-900 text-white px-8 py-3 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-stone-200 transform active:scale-95 ${isConnectingOdoo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              className={`w-full flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-900 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-stone-200 transform active:scale-95 ${isConnectingOdoo ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                               {isConnectingOdoo ? (
                                 <>
@@ -4412,7 +4412,7 @@ function BakeryApp() {
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-3 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-100/50">
+                          <div className="flex items-center gap-3 p-4 bg-emerald-500/5 rounded-xl border border-emerald-100/50">
                             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                               <CheckCircle2 size={20} />
                             </div>
@@ -4424,7 +4424,7 @@ function BakeryApp() {
                         )}
                       </div>
 
-                      <div className="p-5 bg-amber-50/30 rounded-2xl border border-amber-100/50 space-y-3">
+                      <div className="p-5 bg-amber-50/30 rounded-xl border border-amber-100/50 space-y-3">
                         <div className="flex items-center gap-2 text-amber-700">
                           <AlertCircle size={14} />
                           <span className="text-[10px] font-bold uppercase tracking-widest">Setup Instructions</span>
@@ -4454,7 +4454,7 @@ function BakeryApp() {
 
                 {/* App Customisation Section */}
                 {activeSettingsTab === 'customisation' && (
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+                  <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm space-y-8">
                     <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <Palette size={20} />
@@ -4496,7 +4496,7 @@ function BakeryApp() {
                       <div className="space-y-4">
                         <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Bakery Logo</label>
                         <div className="flex items-center gap-4">
-                          <div className="w-24 h-24 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center overflow-hidden shadow-inner">
+                          <div className="w-24 h-24 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-center overflow-hidden shadow-inner">
                             {settings.logo ? (
                               <img src={settings.logo} alt="Logo Preview" className="w-full h-full object-cover" />
                             ) : (
@@ -4540,7 +4540,7 @@ function BakeryApp() {
 
                 {/* User Account Section */}
                 {activeSettingsTab === 'account' && (
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+                  <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm space-y-8">
                     <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <UserCog size={20} />
@@ -4566,7 +4566,7 @@ function BakeryApp() {
                       <div className="w-full max-w-md pt-6 border-t border-stone-100 space-y-4">
                         <button 
                           onClick={handleLogout}
-                          className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm shadow-rose-500/5"
+                          className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm shadow-rose-500/5"
                         >
                           <LogOut size={16} />
                           Sign Out of BakeryApp
@@ -4578,7 +4578,7 @@ function BakeryApp() {
 
                 {/* Inventory Categories Section */}
                 {activeSettingsTab === 'categories' && (
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+                  <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm space-y-8">
                     <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <Layers size={20} />
@@ -4619,7 +4619,7 @@ function BakeryApp() {
                       </div>
                       <div className="flex flex-wrap gap-3">
                         {categories.map(cat => (
-                          <div key={cat} className="flex items-center gap-3 bg-stone-50 px-5 py-3 rounded-2xl border border-stone-200 group transition-all hover:border-primary/30 hover:bg-white hover:shadow-sm">
+                          <div key={cat} className="flex items-center gap-3 bg-stone-50 px-5 py-3 rounded-xl border border-stone-200 group transition-all hover:border-primary/30 hover:bg-white hover:shadow-sm">
                             <span className="text-xs font-bold text-stone-600 uppercase tracking-wider">{cat}</span>
                             {cat !== 'Raw Materials' && (
                               <button 
@@ -4668,19 +4668,19 @@ function BakeryApp() {
 
               {/* Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white p-6 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="bg-white p-6 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Total Runs</div>
                   <div className="text-3xl font-bold font-sans text-stone-800">{productionRuns.length}</div>
                   <div className="text-xs text-stone-500 mt-1">All time</div>
                 </div>
-                <div className="bg-white p-6 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="bg-white p-6 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Units Baked</div>
                   <div className="text-3xl font-bold font-sans text-stone-800">
                     {productionRuns.reduce((s, r) => s + r.quantityProduced, 0)}
                   </div>
                   <div className="text-xs text-stone-500 mt-1">All time</div>
                 </div>
-                <div className="bg-white p-6 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="bg-white p-6 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Total Prod. Cost</div>
                   <div className="text-3xl font-bold font-sans text-stone-800">
                     {currency.symbol}{productionRuns.reduce((s, r) => s + (r.costTotal || 0), 0).toFixed(2)}
@@ -4691,7 +4691,7 @@ function BakeryApp() {
 
               {/* Finished Goods Stock */}
               {menu.some(m => (m.finishedGoodsStock ?? 0) > 0) && (
-                <div className="bg-white rounded-[2rem] border border-stone-200/50 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
                   <div className="px-4 sm:px-8 py-5 border-b border-stone-100 flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                       <Package size={18} />
@@ -4764,8 +4764,8 @@ function BakeryApp() {
 
                 if (filtered.length === 0) {
                   return (
-                    <div className="bg-white rounded-[2rem] border border-stone-200/50 shadow-sm p-16 text-center">
-                      <div className="w-16 h-16 rounded-3xl bg-amber-50 flex items-center justify-center text-amber-400 mx-auto mb-4">
+                    <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm p-16 text-center">
+                      <div className="w-16 h-16 rounded-[10px] sm:rounded-[15px] bg-amber-50 flex items-center justify-center text-amber-400 mx-auto mb-4">
                         <Factory size={32} />
                       </div>
                       <h3 className="text-lg font-sans font-bold text-stone-700 mb-2">No production runs yet</h3>
@@ -4775,7 +4775,7 @@ function BakeryApp() {
                 }
 
                 return (
-                  <div className="bg-white rounded-[2rem] border border-stone-200/50 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px]">
                       <thead className="bg-stone-50">
@@ -4858,7 +4858,7 @@ function BakeryApp() {
 
               <div className="grid grid-cols-1 gap-6">
                 {[...experiments].sort((a,b) => b.date.localeCompare(a.date)).map((exp) => (
-                  <div key={exp.id} className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden p-8 space-y-6">
+                  <div key={exp.id} className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden p-8 space-y-6">
                     <div className="flex justify-between items-start">
                       <div className="flex-1 max-w-md">
                         <input 
@@ -4908,7 +4908,7 @@ function BakeryApp() {
                         {exp.materials.map((req, idx) => {
                           const mat = materials.find(m => m.id === req.materialId);
                           return (
-                            <div key={idx} className="flex items-center gap-3 bg-stone-50/50 p-4 rounded-2xl border border-stone-100 group">
+                            <div key={idx} className="flex items-center gap-3 bg-stone-50/50 p-4 rounded-xl border border-stone-100 group">
                               <div className="flex-1">
                                 <div className="text-[10px] font-bold text-stone-800 uppercase tracking-widest truncate">{mat?.name || 'Unknown'}</div>
                                 <div className="flex items-center gap-2 mt-1">
@@ -4936,15 +4936,15 @@ function BakeryApp() {
                 ))}
 
                 {experiments.filter(e => e.date === orderDate).length === 0 && (
-                  <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-stone-100">
-                    <div className="w-20 h-20 bg-stone-50 rounded-3xl shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
+                  <div className="text-center py-20 bg-white rounded-[10px] sm:rounded-[15px] border-2 border-dashed border-stone-100">
+                    <div className="w-20 h-20 bg-stone-50 rounded-[10px] sm:rounded-[15px] shadow-sm border border-stone-100 flex items-center justify-center mx-auto mb-6 text-stone-200">
                       <FlaskConical size={40} />
                     </div>
                     <h3 className="text-xl font-sans font-bold text-stone-800 mb-2">No R&D sessions logged</h3>
                     <p className="text-stone-500 text-sm mb-8 italic font-sans">Track your R&D and recipe testing costs.</p>
                     <button 
                       onClick={addExperiment}
-                      className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
+                      className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
                     >
                       <Plus size={18} />
                       Log First R&D Session
@@ -4969,7 +4969,7 @@ function BakeryApp() {
                   <h2 className="text-3xl font-sans font-bold text-stone-800">Performance Summary</h2>
                   <p className="text-stone-500 text-sm italic font-sans">Financials and inventory usage for the selected period.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 bg-stone-100/50 p-1 rounded-2xl border border-stone-200/50">
+                <div className="flex flex-wrap items-center gap-2 bg-stone-100/50 p-1 rounded-xl border border-stone-200/50">
                   {(['daily', 'weekly', 'monthly', 'custom'] as const).map((range) => (
                     <button
                       key={range}
@@ -4987,7 +4987,7 @@ function BakeryApp() {
               </div>
 
               {(materials.length === 0 || menu.length === 0 || orders.length === 0) && (
-                <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-amber-200/50 shadow-sm relative overflow-hidden">
+                <div className="bg-white p-6 md:p-8 rounded-[10px] sm:rounded-[15px] border border-amber-200/50 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -mr-16 -mt-16 z-0" />
                   <div className="relative z-10">
                     <h3 className="text-xl font-bold text-stone-800 mb-2">Welcome to BetterEat Bakery! 🍞</h3>
@@ -5032,7 +5032,7 @@ function BakeryApp() {
               )}
 
               {summaryRange !== 'custom' && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="flex items-center gap-3 text-stone-400 text-[10px] font-bold uppercase tracking-widest">
                     <Clock size={16} className="text-primary/40" />
                     <span>Period: <span className="text-stone-600">{summaryDateStart}</span> to <span className="text-stone-600">{summaryDateEnd}</span></span>
@@ -5087,7 +5087,7 @@ function BakeryApp() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="flex flex-wrap items-center gap-3 sm:gap-6 bg-white p-5 rounded-[2rem] border border-stone-200/50 shadow-sm"
+                  className="flex flex-wrap items-center gap-3 sm:gap-6 bg-white p-5 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">From</span>
@@ -5111,10 +5111,10 @@ function BakeryApp() {
               )}
 
               {/* Charts Section */}
-              <div className="bg-white p-8 rounded-[2.5rem] border border-stone-200/50 shadow-sm space-y-8">
+              <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm space-y-8">
                 <div className="flex items-center justify-between border-b border-stone-100 pb-6">
                   <div className="flex items-center gap-4">
-                    <div className="bg-emerald-500/10 p-3 rounded-2xl text-emerald-600">
+                    <div className="bg-emerald-500/10 p-3 rounded-xl text-emerald-600">
                       <TrendingUp size={24} />
                     </div>
                     <div>
@@ -5126,7 +5126,7 @@ function BakeryApp() {
 
                 <div className="h-[350px] w-full">
                   {chartData.every(d => d.income === 0 && d.expenses === 0 && d.profit === 0) ? (
-                    <div className="h-full w-full flex flex-col items-center justify-center text-stone-400 bg-stone-50/50 rounded-2xl border border-dashed border-stone-200">
+                    <div className="h-full w-full flex flex-col items-center justify-center text-stone-400 bg-stone-50/50 rounded-xl border border-dashed border-stone-200">
                       <Calculator size={48} className="mb-4 text-stone-200" />
                       <p className="font-sans italic">No financial data for this period.</p>
                     </div>
@@ -5215,19 +5215,19 @@ function BakeryApp() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm group hover:shadow-md transition-all">
+                <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm group hover:shadow-md transition-all">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Total Income</div>
                   <div className="text-4xl font-sans font-bold text-emerald-600">{currency.symbol}{financials.income}</div>
                   <div className="text-[10px] text-stone-400 mt-2 uppercase font-bold tracking-wider">From {filteredOrders.reduce((acc, o) => acc + o.quantity, 0)} items sold</div>
                 </div>
-                <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm group hover:shadow-md transition-all">
+                <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm group hover:shadow-md transition-all">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Cost of Goods Sold</div>
                   <div className="text-4xl font-sans font-bold text-rose-600">{currency.symbol}{financials.orderExpenses.toFixed(2)}</div>
                   <div className="text-[10px] text-stone-400 mt-2 uppercase font-bold tracking-wider">
                     Cost of fulfilled orders
                   </div>
                 </div>
-                <div className="bg-amber-50 p-8 rounded-[2rem] border border-amber-100 shadow-sm group hover:shadow-md transition-all">
+                <div className="bg-amber-50 p-8 rounded-[10px] sm:rounded-[15px] border border-amber-100 shadow-sm group hover:shadow-md transition-all">
                   <div className="text-amber-600/70 text-[10px] font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5">
                     <Factory size={11} /> Production Cost
                   </div>
@@ -5236,7 +5236,7 @@ function BakeryApp() {
                     {filteredProductionRuns.length} run{filteredProductionRuns.length !== 1 ? 's' : ''} in period
                   </div>
                 </div>
-                <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/20 shadow-lg shadow-primary/5 group hover:shadow-primary/10 transition-all">
+                <div className="bg-primary/5 p-8 rounded-[10px] sm:rounded-[15px] border border-primary/20 shadow-lg shadow-primary/5 group hover:shadow-primary/10 transition-all">
                   <div className="text-primary/60 text-[10px] font-bold uppercase tracking-widest mb-3">Net Profit</div>
                   <div className="text-4xl font-sans font-bold text-primary">{currency.symbol}{financials.profit.toFixed(2)}</div>
                   <div className="text-[10px] text-primary/40 mt-2 uppercase font-bold tracking-wider">
@@ -5247,16 +5247,16 @@ function BakeryApp() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Orders in Period</div>
                   <div className="text-4xl font-sans font-bold text-stone-800">{filteredOrders.length}</div>
                   <div className="text-[10px] text-stone-400 mt-2 uppercase font-bold tracking-wider">{filteredOrders.reduce((acc, o) => acc + o.quantity, 0)} items sold</div>
                 </div>
-                <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Items on Menu</div>
                   <div className="text-4xl font-sans font-bold text-stone-800">{menu.length}</div>
                 </div>
-                <div className="bg-white p-8 rounded-[2rem] border border-stone-200/50 shadow-sm">
+                <div className="bg-white p-8 rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm">
                   <div className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-3">Dates with Data</div>
                   <div className="text-4xl font-sans font-bold text-stone-800">
                     {[...new Set(orders.map(o => o.date))].length}
@@ -5264,7 +5264,7 @@ function BakeryApp() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2.5rem] border border-stone-200/50 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                 <table className="w-full min-w-[500px] text-left border-collapse">
                   <thead>
@@ -5402,10 +5402,10 @@ function BakeryApp() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-y-auto max-h-[90vh] border border-stone-200/50"
+              className="relative w-full max-w-md bg-white rounded-[10px] sm:rounded-[15px] shadow-2xl overflow-y-auto max-h-[90vh] border border-stone-200/50"
             >
               <div className="p-8">
-                <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-emerald-50 rounded-xl flex items-center justify-center mb-6">
                   <Plus size={32} className="text-emerald-500" />
                 </div>
                 <h3 className="text-2xl font-bold text-stone-800 mb-2">Restock {restockMaterial.name}</h3>
@@ -5484,10 +5484,10 @@ function BakeryApp() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-[2.5rem] shadow-2xl border border-stone-200 w-full max-w-sm overflow-hidden"
+              className="bg-white rounded-[10px] sm:rounded-[15px] shadow-2xl border border-stone-200 w-full max-w-sm overflow-hidden"
             >
               <div className="p-8 text-center">
-                <div className={`w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center ${
+                <div className={`w-16 h-16 rounded-xl mx-auto mb-6 flex items-center justify-center ${
                   modalConfig.type === 'confirm' ? 'bg-rose-50 text-rose-500' : 'bg-primary/10 text-primary'
                 }`}>
                   {modalConfig.type === 'confirm' ? <AlertCircle size={32} /> : <CheckCircle2 size={32} />}
