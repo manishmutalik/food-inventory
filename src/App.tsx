@@ -1692,6 +1692,39 @@ function BakeryApp() {
     }
   };
 
+  /**
+   * Submits the Add Material modal form, creating a new material with all fields.
+   */
+  const handleAddMaterialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser || !addMatName.trim()) return;
+    const userId = auth.currentUser.uid;
+    const id = Math.random().toString(36).substr(2, 9);
+    const newMat: RawMaterial = {
+      id,
+      name: addMatName.trim(),
+      unit: addMatUnit,
+      initialStock: parseFloat(addMatStock) || 0,
+      costPerUnit: parseFloat(addMatCost) || 0,
+      category: addMaterialCategory,
+      threshold: parseFloat(addMatThreshold) || 0,
+      dateAdded: new Date().toISOString().split('T')[0],
+      ...(addMatExpiry ? { expiryDate: addMatExpiry } : {}),
+    };
+    try {
+      await setDoc(doc(db, 'users', userId, 'materials', id), newMat);
+      setShowAddMaterialModal(false);
+      setAddMatName('');
+      setAddMatUnit('g');
+      setAddMatStock('');
+      setAddMatCost('');
+      setAddMatThreshold('');
+      setAddMatExpiry('');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `users/${userId}/materials/${id}`);
+    }
+  };
+
   const handleDownloadTemplate = () => {
     const csvContent = "Name,Unit,Initial Stock,Cost,Threshold\nFlour,kg,100,2.5,20\nSugar,kg,50,1.2,10";
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1915,6 +1948,16 @@ function BakeryApp() {
   const [restockQty, setRestockQty] = useState<string>('');
   const [restockBaseTotal, setRestockBaseTotal] = useState<string>('');
   const [restockExpiryDate, setRestockExpiryDate] = useState<string>('');
+
+  // Add Material modal state
+  const [showAddMaterialModal, setShowAddMaterialModal] = useState<boolean>(false);
+  const [addMaterialCategory, setAddMaterialCategory] = useState<string>('Raw Materials');
+  const [addMatName, setAddMatName] = useState<string>('');
+  const [addMatUnit, setAddMatUnit] = useState<string>('g');
+  const [addMatStock, setAddMatStock] = useState<string>('');
+  const [addMatCost, setAddMatCost] = useState<string>('');
+  const [addMatThreshold, setAddMatThreshold] = useState<string>('');
+  const [addMatExpiry, setAddMatExpiry] = useState<string>('');
 
   /**
    * Processes a material restock and recalculates its Moving Average Cost (MAC).
@@ -3109,7 +3152,7 @@ function BakeryApp() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8">
+      <main className="flex-1 w-full px-3 py-8 sm:px-4 lg:px-6">
         <AnimatePresence mode="wait">
           {/* Inventory Tab */}
           {activeTab === 'inventory' && (
@@ -3222,7 +3265,7 @@ function BakeryApp() {
                         />
                       </label>
                       <button 
-                        onClick={() => addMaterial(category)}
+                        onClick={() => { setAddMaterialCategory(category); setShowAddMaterialModal(true); }}
                         className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 transform active:scale-95"
                       >
                         <Plus size={18} />
@@ -3236,7 +3279,7 @@ function BakeryApp() {
                     <table className="w-full min-w-[640px] text-left border-collapse">
                       <thead>
                         <tr className="bg-stone-50/50 border-b border-stone-100">
-                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Material Name</th>
+                          <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest w-56 min-w-[14rem]">Material Name</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Unit</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Current Stock</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest" title="Alert when current stock drops below this amount">Threshold (Alert)</th>
@@ -5605,6 +5648,131 @@ function BakeryApp() {
       </AnimatePresence>
 
       {/* Restock Modal */}
+
+      {/* Add Material Modal */}
+      {showAddMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+            onClick={() => setShowAddMaterialModal(false)}
+          />
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="relative w-full max-w-lg bg-white rounded-[10px] sm:rounded-[15px] shadow-2xl overflow-y-auto max-h-[90vh] border border-stone-200/50"
+          >
+            <div className="p-8">
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                <Plus size={32} className="text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-stone-800 mb-1">Add New Item</h3>
+              <p className="text-stone-400 text-sm font-sans italic mb-6">Adding to <span className="font-bold text-stone-600">{addMaterialCategory}</span></p>
+
+              <form onSubmit={handleAddMaterialSubmit}>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Item Name *</label>
+                    <input
+                      type="text"
+                      required
+                      autoFocus
+                      value={addMatName}
+                      onChange={(e) => setAddMatName(e.target.value)}
+                      placeholder="e.g. All-Purpose Flour"
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Unit</label>
+                      <select
+                        value={addMatUnit}
+                        onChange={(e) => setAddMatUnit(e.target.value)}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-700 font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                      >
+                        <option value="g">g (grams)</option>
+                        <option value="kg">kg (kilograms)</option>
+                        <option value="ml">ml (millilitres)</option>
+                        <option value="l">l (litres)</option>
+                        <option value="pcs">pcs (pieces)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Initial Stock</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={addMatStock}
+                        onChange={(e) => setAddMatStock(e.target.value)}
+                        placeholder="0"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-mono font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Cost per Unit ({currency.symbol})</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={addMatCost}
+                        onChange={(e) => setAddMatCost(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-mono font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Low Stock Alert ({addMatUnit})</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={addMatThreshold}
+                        onChange={(e) => setAddMatThreshold(e.target.value)}
+                        placeholder="e.g. 500"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-800 font-mono font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Expiry Date (optional)</label>
+                    <input
+                      type="date"
+                      value={addMatExpiry}
+                      onChange={(e) => setAddMatExpiry(e.target.value)}
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-700 font-mono focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddMaterialModal(false)}
+                    className="flex-1 px-6 py-4 rounded-xl text-xs font-bold text-stone-500 hover:bg-stone-50 transition-colors uppercase tracking-widest border border-stone-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!addMatName.trim()}
+                    className="flex-1 px-6 py-4 rounded-xl text-xs font-bold text-white bg-primary hover:bg-primary-dark transition-colors uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-primary/20"
+                  >
+                    Add Item
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
         {restockMaterial && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
