@@ -1902,6 +1902,29 @@ function BakeryApp() {
     }
   };
 
+  /**
+   * Atomically updates multiple fields on a material in a single Firestore write.
+   * Use this instead of calling updateMaterial() multiple times, which causes
+   * race conditions (each call spreads the stale mat object, overwriting each other).
+   *
+   * @param id     - Firestore document ID of the material to update.
+   * @param fields - Partial object of fields to merge.
+   */
+  const patchMaterial = async (id: string, fields: Partial<RawMaterial>) => {
+    if (!auth.currentUser) return;
+    const userId = auth.currentUser.uid;
+    const mat = materials.find(m => m.id === id);
+    try {
+      await setDoc(
+        doc(db, 'users', userId, 'materials', id),
+        mat ? { ...mat, ...fields } : fields,
+        { merge: true }
+      );
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `users/${userId}/materials/${id}`);
+    }
+  };
+
   // ─── Restock Modal State ────────────────────────────────────────────────────────
   // State for the Restock Material modal, declared here so it can share scope
   // with the materials array and update Material handler.
@@ -3352,16 +3375,19 @@ function BakeryApp() {
                                     if (fromUnit === toUnit) return;
                                     const factor = UNIT_CONVERSIONS[fromUnit]?.[toUnit];
                                     if (factor !== undefined) {
-                                      // Convert stock quantity: e.g. 10000 g * 0.001 = 10 kg
+                                      // Convert stock: e.g. 10 kg * 1000 = 10000 g
                                       const newStock = parseFloat((mat.initialStock * factor).toFixed(6));
-                                      // Cost per unit inverts: e.g. 0.045/g / 0.001 = 45/kg
-                                      const newCost = parseFloat((mat.costPerUnit / factor).toFixed(4));
-                                      updateMaterial(mat.id, 'unit', toUnit);
-                                      updateMaterial(mat.id, 'initialStock', newStock);
-                                      updateMaterial(mat.id, 'costPerUnit', newCost);
+                                      // Cost inverts: e.g. 45/kg / 1000 = 0.045/g
+                                      const newCost = parseFloat((mat.costPerUnit / factor).toFixed(6));
+                                      // Single atomic write — no race condition
+                                      patchMaterial(mat.id, {
+                                        unit: toUnit,
+                                        initialStock: newStock,
+                                        costPerUnit: newCost,
+                                      });
                                     } else {
                                       // Incompatible unit family (e.g. kg to pcs): only relabel
-                                      updateMaterial(mat.id, 'unit', toUnit);
+                                      patchMaterial(mat.id, { unit: toUnit });
                                     }
                                   }}
                                   className="bg-stone-100/50 border-none rounded-lg px-2 py-1 text-[10px] font-bold text-stone-500 focus:ring-2 focus:ring-primary/20 uppercase tracking-wider"
