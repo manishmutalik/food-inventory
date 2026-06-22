@@ -369,6 +369,20 @@ interface AppUser {
 // ─── Seed / Initial Data ─────────────────────────────────────────────────────────
 // Displayed before Firestore data loads (unauthenticated / first-run state).
 
+// ─── Seed Wastage Logs (Demo / first-run placeholder) ───────────────────────
+const INITIAL_WASTAGE_LOGS: WastageLog[] = [
+  // Raw-material wastages
+  { id: 'wl1', type: 'material', itemId: '3', quantity: 500, cost: 6.00, date: '2026-06-10', reason: 'Butter exceeded use-by date — batch discarded' },
+  { id: 'wl2', type: 'material', itemId: '1', quantity: 800, cost: 1.60, date: '2026-06-13', reason: 'Flour contaminated with moisture — disposal required' },
+  { id: 'wl3', type: 'material', itemId: '5', quantity: 600, cost: 0.72, date: '2026-06-15', reason: 'Whole milk souring detected — full batch discarded' },
+  { id: 'wl4', type: 'material', itemId: '4', quantity: 6, cost: 1.50, date: '2026-06-17', reason: 'Cracked eggs during storage — unusable' },
+  { id: 'wl5', type: 'material', itemId: '2', quantity: 300, cost: 0.45, date: '2026-06-19', reason: 'Sugar hardened into clumps due to humidity' },
+  { id: 'wl6', type: 'material', itemId: '6', quantity: 50, cost: 2.50, date: '2026-06-21', reason: 'Yeast expired — failed activation test' },
+  // Finished-goods (recipe / production) wastages
+  { id: 'wl7', type: 'recipe', itemId: 'm1', quantity: 8, cost: 28.50, date: '2026-06-12', reason: 'Croissants unsold by end-of-day — past safe window' },
+  { id: 'wl8', type: 'recipe', itemId: 'm2', quantity: 12, cost: 31.20, date: '2026-06-16', reason: 'Muffin batch over-proofed — texture failure, not saleable' },
+  { id: 'wl9', type: 'recipe', itemId: 'm1', quantity: 5, cost: 17.81, date: '2026-06-20', reason: 'Overnight croissants not sold — discarded at opening' },
+];
 const INITIAL_MATERIALS: RawMaterial[] = [
   { id: '1', name: 'All-Purpose Flour', unit: 'g', initialStock: 10000, costPerUnit: 0.002, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-01' },
   { id: '2', name: 'Granulated Sugar', unit: 'g', initialStock: 5000, costPerUnit: 0.0015, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-02' },
@@ -476,13 +490,13 @@ function BakeryApp() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [experiments, setExperiments] = useState<RecipeExperiment[]>([]);
   const [productionRuns, setProductionRuns] = useState<ProductionRun[]>([]);
-  const [wastageLogs, setWastageLogs] = useState<WastageLog[]>([]);
+  const [wastageLogs, setWastageLogs] = useState<WastageLog[]>(INITIAL_WASTAGE_LOGS);
   const [isProductionRunModalOpen, setIsProductionRunModalOpen] = useState(false);
   const [productionFilterRecipe, setProductionFilterRecipe] = useState('');
   const [productionFilterPurpose, setProductionFilterPurpose] = useState('');
   // ── UI / Navigation State ─────────────────────────────────────────────────────
   // Active tab is persisted to localStorage so the user returns to the same view.
-  const [activeTab, setActiveTab] = useState<'inventory' | 'menu' | 'orders' | 'experiments' | 'production' | 'summary' | 'settings'>(() => {
+  const [activeTab, setActiveTab] = useState<'inventory' | 'menu' | 'orders' | 'experiments' | 'production' | 'summary' | 'settings' | 'wastage'>(() => {
     return (localStorage.getItem('activeTab') as any) || 'inventory';
   });
 
@@ -937,6 +951,12 @@ function BakeryApp() {
       }
     }, (err) => handleFirestoreError(err, OperationType.GET, `users/${userId}/settings/bakery`));
 
+    // Wastage Logs — `users/{userId}/wastageLogs`
+    const unsubWastageLogs = onSnapshot(collection(db, 'users', userId, 'wastageLogs'), (snapshot) => {
+      const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WastageLog));
+      setWastageLogs(logs);
+    }, (err) => handleFirestoreError(err, OperationType.LIST, `users/${userId}/wastageLogs`));
+
     return () => {
       unsubMaterials();
       unsubMenu();
@@ -944,6 +964,7 @@ function BakeryApp() {
       unsubExperiments();
       unsubProductionRuns();
       unsubSettings();
+      unsubWastageLogs();
     };
   }, [isAuthReady, user]);
 
@@ -5516,6 +5537,149 @@ function BakeryApp() {
               </div>
             </motion.div>
           )}
+
+          {/* ─── Wastage Tab ─────────────────────────────────────────────── */}
+          {activeTab === 'wastage' && (
+            <motion.div
+              key="wastage"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-8"
+            >
+              <div>
+                <h1 className="text-3xl font-bold text-stone-800 tracking-tight">Wastage Log</h1>
+                <p className="text-stone-500 text-sm font-sans italic mt-1">Track and review all discarded raw materials and finished goods.</p>
+              </div>
+
+              {/* Summary Cards */}
+              {(() => {
+                const matLogs = wastageLogs.filter(w => w.type === "material");
+                const recLogs = wastageLogs.filter(w => w.type === "recipe");
+                const totalCost = wastageLogs.reduce((s, w) => s + (w.cost || 0), 0);
+                const matCost  = matLogs.reduce((s, w) => s + (w.cost || 0), 0);
+                const recCost  = recLogs.reduce((s, w) => s + (w.cost || 0), 0);
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm p-6 flex flex-col gap-2">
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Total Wastage Cost</span>
+                      <span className="text-3xl font-mono font-bold text-rose-600">{currency.symbol}{totalCost.toFixed(2)}</span>
+                      <span className="text-xs text-stone-400">{wastageLogs.length} discard event{wastageLogs.length !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm p-6 flex flex-col gap-2">
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Raw Material Wastage</span>
+                      <span className="text-3xl font-mono font-bold text-amber-600">{currency.symbol}{matCost.toFixed(2)}</span>
+                      <span className="text-xs text-stone-400">{matLogs.length} event{matLogs.length !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm p-6 flex flex-col gap-2">
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Finished Goods Wastage</span>
+                      <span className="text-3xl font-mono font-bold text-purple-600">{currency.symbol}{recCost.toFixed(2)}</span>
+                      <span className="text-xs text-stone-400">{recLogs.length} event{recLogs.length !== 1 ? "s" : ""}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Log Table */}
+              <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
+                  <h2 className="font-bold text-stone-700 uppercase tracking-widest text-[10px]">All Discard Events</h2>
+                  <span className="text-[10px] text-stone-400 font-mono">{wastageLogs.length} records</span>
+                </div>
+                {wastageLogs.length === 0 ? (
+                  <div className="px-6 py-16 text-center text-stone-400 font-sans italic text-sm">
+                    No wastage events recorded yet. Use the Discard button on inventory items or production runs.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[640px]">
+                      <thead>
+                        <tr className="bg-stone-50/50 border-b border-stone-100">
+                          <th className="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Date</th>
+                          <th className="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Type</th>
+                          <th className="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Item</th>
+                          <th className="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Qty Discarded</th>
+                          <th className="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Cost</th>
+                          <th className="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-50">
+                        {[...wastageLogs].sort((a, b) => b.date.localeCompare(a.date)).map(log => {
+                          const isMat = log.type === "material";
+                          const mat = isMat ? materials.find(m => m.id === log.itemId) : null;
+                          const rec = !isMat ? menu.find(m => m.id === log.itemId) : null;
+                          const itemName = mat?.name ?? rec?.name ?? log.itemId;
+                          const unit = mat?.unit ?? (rec ? "pcs" : "");
+                          return (
+                            <tr key={log.id} className="hover:bg-stone-50/30 transition-colors">
+                              <td className="px-6 py-4 text-sm font-mono text-stone-500">{log.date}</td>
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isMat ? "bg-amber-50 text-amber-700" : "bg-purple-50 text-purple-700"}`}>
+                                  {isMat ? "Raw Material" : "Finished Good"}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-bold text-stone-800 text-sm">{itemName}</td>
+                              <td className="px-6 py-4 font-mono text-stone-600 text-sm">{log.quantity} {unit}</td>
+                              <td className="px-6 py-4 font-mono font-bold text-rose-600 text-sm">{currency.symbol}{(log.cost || 0).toFixed(2)}</td>
+                              <td className="px-6 py-4 text-stone-500 text-xs font-sans italic max-w-xs">{log.reason || "—"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Per-Item Breakdown */}
+              {wastageLogs.length > 0 && (() => {
+                const byItem: Record<string, { name: string; type: string; totalQty: number; totalCost: number; unit: string; events: number }> = {};
+                wastageLogs.forEach(log => {
+                  const isMat = log.type === "material";
+                  const mat = isMat ? materials.find(m => m.id === log.itemId) : null;
+                  const rec = !isMat ? menu.find(m => m.id === log.itemId) : null;
+                  const name = mat?.name ?? rec?.name ?? log.itemId;
+                  const unit = mat?.unit ?? (rec ? "pcs" : "");
+                  if (!byItem[log.itemId]) byItem[log.itemId] = { name, type: log.type, totalQty: 0, totalCost: 0, unit, events: 0 };
+                  byItem[log.itemId].totalQty += log.quantity;
+                  byItem[log.itemId].totalCost += log.cost || 0;
+                  byItem[log.itemId].events++;
+                });
+                const sorted = Object.values(byItem).sort((a, b) => b.totalCost - a.totalCost);
+                return (
+                  <div className="bg-white rounded-[10px] sm:rounded-[15px] border border-stone-200/50 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-stone-100">
+                      <h2 className="font-bold text-stone-700 uppercase tracking-widest text-[10px]">Wastage by Item (All Time)</h2>
+                    </div>
+                    <div className="divide-y divide-stone-50">
+                      {sorted.map(item => (
+                        <div key={item.name} className="px-6 py-4 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className={`shrink-0 w-2 h-2 rounded-full ${item.type === "material" ? "bg-amber-400" : "bg-purple-400"}`} />
+                            <div className="min-w-0">
+                              <div className="font-bold text-sm text-stone-800 truncate">{item.name}</div>
+                              <div className="text-[10px] text-stone-400 uppercase tracking-wider">{item.type === "material" ? "Raw Material" : "Finished Good"} · {item.events} event{item.events !== 1 ? "s" : ""}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-6 shrink-0">
+                            <div className="text-right">
+                              <div className="text-[10px] text-stone-400 uppercase tracking-wider">Qty</div>
+                              <div className="font-mono font-bold text-stone-700 text-sm">{item.totalQty.toFixed(item.type === "recipe" ? 0 : 0)} {item.unit}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[10px] text-stone-400 uppercase tracking-wider">Cost Lost</div>
+                              <div className="font-mono font-bold text-rose-600 text-sm">{currency.symbol}{item.totalCost.toFixed(2)}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </motion.div>
+          )}
+
         </AnimatePresence>
       </main>
 
