@@ -15,6 +15,7 @@ export interface ProductionRun {
   id: string;
   recipeId: string;
   quantityProduced: number;
+  remainingQuantity?: number; // Added for FIFO stock deduction
   quantityYield?: number;  // Sellable units after waste. Defaults to quantityProduced if not set.
   date: string;            // YYYY-MM-DD
   purpose: ProductionPurpose;

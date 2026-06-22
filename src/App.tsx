@@ -600,6 +600,7 @@ function BakeryApp() {
   const [lastSynced, setLastSynced] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAlertDismissed, setIsAlertDismissed] = useState(false);
+  const [isExpiredAlertDismissed, setIsExpiredAlertDismissed] = useState(false);
 
   // ── Integration Bootstrap ─────────────────────────────────────────────────────
   // Polls /api/shopify/status and /api/odoo/status once on mount to hydrate
@@ -801,15 +802,15 @@ function BakeryApp() {
 
     // 5. Production Runs
     const productionRunsToSeed = [
-      { id: 'run_1', recipeId: 'menu_croissant', quantityProduced: 30, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 30 * 83.40, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
-      { id: 'run_2', recipeId: 'menu_muffin', quantityProduced: 30, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 30 * 87.30, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
-      { id: 'run_3', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
-      { id: 'run_4', recipeId: 'menu_croissant', quantityProduced: 20, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 20 * 83.40, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      { id: 'run_5', recipeId: 'menu_muffin', quantityProduced: 20, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 20 * 87.30, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      { id: 'run_6', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      { id: 'run_7', recipeId: 'menu_croissant', quantityProduced: 25, date: getPastDateStr(1), purpose: 'customer_order', costTotal: 25 * 83.40, createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000 },
-      { id: 'run_8', recipeId: 'menu_muffin', quantityProduced: 25, date: getPastDateStr(2), purpose: 'market_stock', costTotal: 25 * 87.30, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
-      { id: 'run_9', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(2), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 }
+      { id: 'run_1', recipeId: 'menu_croissant', quantityProduced: 30, remainingQuantity: 0, date: getPastDateStr(6), expiryDate: getPastDateStr(4), purpose: 'market_stock', costTotal: 30 * 83.40, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
+      { id: 'run_2', recipeId: 'menu_muffin', quantityProduced: 30, remainingQuantity: 0, date: getPastDateStr(6), expiryDate: getPastDateStr(3), purpose: 'market_stock', costTotal: 30 * 87.30, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
+      { id: 'run_3', recipeId: 'menu_sourdough', quantityProduced: 15, remainingQuantity: 0, date: getPastDateStr(6), expiryDate: getPastDateStr(4), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
+      { id: 'run_4', recipeId: 'menu_croissant', quantityProduced: 20, remainingQuantity: 5, date: getPastDateStr(4), expiryDate: getPastDateStr(2), purpose: 'market_stock', costTotal: 20 * 83.40, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_5', recipeId: 'menu_muffin', quantityProduced: 20, remainingQuantity: 10, date: getPastDateStr(4), expiryDate: getPastDateStr(1), purpose: 'market_stock', costTotal: 20 * 87.30, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_6', recipeId: 'menu_sourdough', quantityProduced: 15, remainingQuantity: 5, date: getPastDateStr(4), expiryDate: getPastDateStr(2), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_7', recipeId: 'menu_croissant', quantityProduced: 25, remainingQuantity: 25, date: getPastDateStr(1), expiryDate: getPastDateStr(-1), purpose: 'customer_order', costTotal: 25 * 83.40, createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000 },
+      { id: 'run_8', recipeId: 'menu_muffin', quantityProduced: 25, remainingQuantity: 25, date: getPastDateStr(2), expiryDate: getPastDateStr(-1), purpose: 'market_stock', costTotal: 25 * 87.30, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
+      { id: 'run_9', recipeId: 'menu_sourdough', quantityProduced: 15, remainingQuantity: 15, date: getPastDateStr(2), expiryDate: getPastDateStr(0), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 }
     ];
 
     // 6. Recipe R&D Session (Experiments)
@@ -2515,10 +2516,20 @@ function BakeryApp() {
     const id = Math.random().toString(36).substr(2, 9);
 
     // Firestore does not accept `undefined` — build object only with defined fields
+    const recipeItem = menu.find(m => m.id === runData.recipeId);
+    let expiryDate = undefined;
+    if (recipeItem?.shelfLifeDays) {
+       const d = new Date(runData.date);
+       d.setDate(d.getDate() + recipeItem.shelfLifeDays);
+       expiryDate = d.toISOString().split('T')[0];
+    }
+    const yieldAmt = runData.quantityYield ?? runData.quantityProduced;
     const run: Record<string, any> = {
       id,
       recipeId: runData.recipeId,
       quantityProduced: runData.quantityProduced,
+      remainingQuantity: yieldAmt,
+      ...(expiryDate && { expiryDate }),
       date: runData.date,
       purpose: runData.purpose,
       costTotal: runData.costTotal,
@@ -2662,12 +2673,33 @@ function BakeryApp() {
       await deductIngredients(userId, item.recipe, order.quantity, batch);
       await batch.commit();
     } else if (stock >= order.quantity) {
-      // Enough stock: deduct finished goods only
-      await setDoc(
+      // Enough stock: deduct finished goods only, and apply FIFO logic to ProductionRuns
+      const batch = writeBatch(db);
+      
+      // FIFO logic
+      let remainingToDeduct = order.quantity;
+      const relevantRuns = productionRuns
+        .filter(r => r.recipeId === item.id && (r.remainingQuantity ?? 0) > 0)
+        .sort((a, b) => a.date.localeCompare(b.date));
+      
+      for (const run of relevantRuns) {
+        if (remainingToDeduct <= 0) break;
+        const available = run.remainingQuantity ?? 0;
+        const deduct = Math.min(available, remainingToDeduct);
+        batch.set(
+          doc(db, 'users', userId, 'productionRuns', run.id),
+          { remainingQuantity: available - deduct },
+          { merge: true }
+        );
+        remainingToDeduct -= deduct;
+      }
+      
+      batch.set(
         doc(db, 'users', userId, 'menu', item.id),
         { finishedGoodsStock: stock - order.quantity },
         { merge: true }
       );
+      await batch.commit();
     } else {
       // Partial: show choice
       const choice = window.confirm(
@@ -2790,6 +2822,61 @@ function BakeryApp() {
   const [showSaveFeedback, setShowSaveFeedback] = useState(false);
   
   // ─── Computed Values (useMemo) ──────────────────────────────────────────────────────
+  const expiredBatches = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return productionRuns.filter(r => 
+      (r.remainingQuantity ?? 0) > 0 && r.expiryDate && r.expiryDate <= today
+    );
+  }, [productionRuns]);
+
+  const handleDiscardBatch = async (batch: ProductionRun) => {
+    if (!auth.currentUser) return;
+    const userId = auth.currentUser.uid;
+    const qty = batch.remainingQuantity ?? 0;
+    if (qty <= 0) return;
+
+    // We prorate the historic cost based on the quantity being discarded vs produced
+    const originalQty = batch.quantityYield ?? batch.quantityProduced;
+    const proratedCost = originalQty > 0 ? (batch.costTotal * (qty / originalQty)) : 0;
+
+    const recipe = menu.find(m => m.id === batch.recipeId);
+    
+    try {
+      const batchOp = writeBatch(db);
+      
+      const logId = 'waste_' + Date.now();
+      batchOp.set(doc(db, 'users', userId, 'wastageLogs', logId), {
+        id: logId,
+        type: 'recipe',
+        itemId: batch.recipeId,
+        quantity: qty,
+        cost: proratedCost,
+        date: new Date().toISOString().split('T')[0],
+        reason: 'Expired'
+      });
+      
+      // Update the production run remaining quantity
+      batchOp.set(
+        doc(db, 'users', userId, 'productionRuns', batch.id),
+        { remainingQuantity: 0 },
+        { merge: true }
+      );
+      
+      // Also deduct from global finishedGoodsStock if present
+      if (recipe && (recipe.finishedGoodsStock ?? 0) > 0) {
+        batchOp.set(
+          doc(db, 'users', userId, 'menu', recipe.id),
+          { finishedGoodsStock: Math.max(0, (recipe.finishedGoodsStock ?? 0) - qty) },
+          { merge: true }
+        );
+      }
+      
+      await batchOp.commit();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `users/${userId}/wastageLogs (batch discard)`);
+    }
+  };
+
   // Aggregated income/expenses/profit for the currently selected date range.
   // Re-computed whenever orders, menu prices, materials costs, or date bounds change.
   const summaryFinancials = useMemo(() => getFinancialsForRange(summaryDateStart, summaryDateEnd), [summaryDateStart, summaryDateEnd, orders, menu, materials]);
@@ -3156,6 +3243,21 @@ function BakeryApp() {
             </div>
             
             <div className="flex items-center gap-2 sm:gap-6 min-w-0 shrink">
+              {expiredBatches.length > 0 && !isExpiredAlertDismissed && (
+                <button 
+                  onClick={() => {
+                    setActiveTab('menu');
+                    setIsExpiredAlertDismissed(true);
+                  }}
+                  className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group shrink-0"
+                  title={`${expiredBatches.length} expired batches`}
+                >
+                  <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
+                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                    {expiredBatches.length}
+                  </span>
+                </button>
+              )}
               {lowStockItems.length > 0 && !isAlertDismissed && (
                 <button 
                   onClick={() => {
@@ -3622,17 +3724,29 @@ function BakeryApp() {
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                          <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-4 py-2 shadow-sm">
-                            <span className="text-stone-400 text-sm font-bold">{currency.symbol}</span>
-                            <input 
-                              type="number" 
-                              step="0.01"
-                              value={item.sellingPrice ?? 0}
-                              onChange={(e) => updateMenuItemField(item.id, 'sellingPrice', parseFloat(e.target.value) || 0)}
-                              className="w-20 bg-transparent border-none focus:ring-0 text-lg font-bold text-stone-700 p-0"
-                              placeholder="Price"
-                            />
-                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Sale</span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-4 py-2 shadow-sm">
+                              <span className="text-stone-400 text-sm font-bold">{currency.symbol}</span>
+                              <input 
+                                type="number" 
+                                step="0.01"
+                                value={item.sellingPrice ?? 0}
+                                onChange={(e) => updateMenuItemField(item.id, 'sellingPrice', parseFloat(e.target.value) || 0)}
+                                className="w-16 bg-transparent border-none focus:ring-0 text-lg font-bold text-stone-700 p-0"
+                                placeholder="Price"
+                              />
+                              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Sale</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-xl px-3 py-2 shadow-sm" title="Shelf Life (Days)">
+                              <input 
+                                type="number" 
+                                value={item.shelfLifeDays || ''}
+                                onChange={(e) => updateMenuItemField(item.id, 'shelfLifeDays', parseInt(e.target.value) || undefined)}
+                                className="w-8 bg-transparent border-none focus:ring-0 text-lg font-bold text-stone-700 p-0 text-center"
+                                placeholder="-"
+                              />
+                              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Days</span>
+                            </div>
                           </div>
                           {(() => {
                             const cost = item.recipe.reduce((total, req) => {
