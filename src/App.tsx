@@ -371,27 +371,44 @@ interface AppUser {
 
 // ─── Seed Wastage Logs (Demo / first-run placeholder) ───────────────────────
 const INITIAL_WASTAGE_LOGS: WastageLog[] = [
-  // Raw-material wastages
-  { id: 'wl1', type: 'material', itemId: '3', quantity: 500, cost: 6.00, date: '2026-06-10', reason: 'Butter exceeded use-by date — batch discarded' },
-  { id: 'wl2', type: 'material', itemId: '1', quantity: 800, cost: 1.60, date: '2026-06-13', reason: 'Flour contaminated with moisture — disposal required' },
-  { id: 'wl3', type: 'material', itemId: '5', quantity: 600, cost: 0.72, date: '2026-06-15', reason: 'Whole milk souring detected — full batch discarded' },
-  { id: 'wl4', type: 'material', itemId: '4', quantity: 6, cost: 1.50, date: '2026-06-17', reason: 'Cracked eggs during storage — unusable' },
-  { id: 'wl5', type: 'material', itemId: '2', quantity: 300, cost: 0.45, date: '2026-06-19', reason: 'Sugar hardened into clumps due to humidity' },
-  { id: 'wl6', type: 'material', itemId: '6', quantity: 50, cost: 2.50, date: '2026-06-21', reason: 'Yeast expired — failed activation test' },
-  // Finished-goods (recipe / production) wastages
-  { id: 'wl7', type: 'recipe', itemId: 'm1', quantity: 8, cost: 28.50, date: '2026-06-12', reason: 'Croissants unsold by end-of-day — past safe window' },
-  { id: 'wl8', type: 'recipe', itemId: 'm2', quantity: 12, cost: 31.20, date: '2026-06-16', reason: 'Muffin batch over-proofed — texture failure, not saleable' },
-  { id: 'wl9', type: 'recipe', itemId: 'm1', quantity: 5, cost: 17.81, date: '2026-06-20', reason: 'Overnight croissants not sold — discarded at opening' },
+  // Raw-material wastages (quantities in the material's native unit)
+  // Butter: 0.5 kg × ₹500/kg = ₹250
+  { id: 'wl1', type: 'material', itemId: '3', quantity: 0.5, cost: 250, date: '2026-06-10', reason: 'Butter exceeded use-by date — batch discarded' },
+  // Flour: 0.8 kg × ₹45/kg = ₹36
+  { id: 'wl2', type: 'material', itemId: '1', quantity: 0.8, cost: 36, date: '2026-06-13', reason: 'Flour contaminated with moisture — disposal required' },
+  // Milk: 0.6 l × ₹60/l = ₹36
+  { id: 'wl3', type: 'material', itemId: '5', quantity: 0.6, cost: 36, date: '2026-06-15', reason: 'Whole milk souring detected — full batch discarded' },
+  // Eggs: 6 pcs × ₹8/pc = ₹48
+  { id: 'wl4', type: 'material', itemId: '4', quantity: 6, cost: 48, date: '2026-06-17', reason: 'Cracked eggs during storage — unusable' },
+  // Sugar: 0.3 kg × ₹42/kg = ₹12.60
+  { id: 'wl5', type: 'material', itemId: '2', quantity: 0.3, cost: 12.60, date: '2026-06-19', reason: 'Sugar hardened into clumps due to humidity' },
+  // Yeast: 50 g × ₹0.80/g = ₹40
+  { id: 'wl6', type: 'material', itemId: '6', quantity: 50, cost: 40, date: '2026-06-21', reason: 'Yeast expired — failed activation test' },
+  // Finished-goods wastages
+  // Croissant material cost ≈ (0.25×45 + 0.025×42 + 0.125×500 + 0.05×60 + 7×0.80) = 11.25+1.05+62.50+3+5.60 = ₹83.40 → ×8 = ₹667
+  { id: 'wl7', type: 'recipe', itemId: 'm1', quantity: 8, cost: 667, date: '2026-06-12', reason: 'Croissants unsold by end-of-day — past safe window' },
+  // Muffin material cost ≈ (0.2×45 + 0.15×42 + 0.1×500 + 2×8 + 0.1×60) = 9+6.30+50+16+6 = ₹87.30 → ×12 = ₹1047.60
+  { id: 'wl8', type: 'recipe', itemId: 'm2', quantity: 12, cost: 1047.60, date: '2026-06-16', reason: 'Muffin batch over-proofed — texture failure, not saleable' },
+  // Croissant ×5 = ₹417
+  { id: 'wl9', type: 'recipe', itemId: 'm1', quantity: 5, cost: 417, date: '2026-06-20', reason: 'Overnight croissants not sold — discarded at opening' },
 ];
 const INITIAL_MATERIALS: RawMaterial[] = [
-  { id: '1', name: 'All-Purpose Flour', unit: 'g', initialStock: 10000, costPerUnit: 0.002, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-01' },
-  { id: '2', name: 'Granulated Sugar', unit: 'g', initialStock: 5000, costPerUnit: 0.0015, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-02' },
-  { id: '3', name: 'Unsalted Butter', unit: 'g', initialStock: 2000, costPerUnit: 0.012, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-03' },
-  { id: '4', name: 'Large Eggs', unit: 'pcs', initialStock: 60, costPerUnit: 0.25, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-04' },
-  { id: '5', name: 'Whole Milk', unit: 'ml', initialStock: 3000, costPerUnit: 0.0012, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-05' },
-  { id: '6', name: 'Active Dry Yeast', unit: 'g', initialStock: 500, costPerUnit: 0.05, category: 'Raw Materials', threshold: 20, dateAdded: '2026-01-06' },
-  { id: '7', name: 'Packaging Box', unit: 'pcs', initialStock: 100, costPerUnit: 0.50, category: 'Packaging Materials', threshold: 20, dateAdded: '2026-01-07' },
-  { id: '8', name: 'Greaseproof Paper', unit: 'pcs', initialStock: 200, costPerUnit: 0.05, category: 'Packaging Materials', threshold: 20, dateAdded: '2026-01-08' },
+  // Flour: 10 kg on hand, costs ₹45/kg, alert when below 2 kg
+  { id: '1', name: 'All-Purpose Flour', unit: 'kg', initialStock: 10, costPerUnit: 45, category: 'Raw Materials', threshold: 2, dateAdded: '2026-01-01' },
+  // Sugar: 5 kg, ₹42/kg, alert at 1 kg
+  { id: '2', name: 'Granulated Sugar', unit: 'kg', initialStock: 5, costPerUnit: 42, category: 'Raw Materials', threshold: 1, dateAdded: '2026-01-02' },
+  // Butter: 2 kg, ₹500/kg, alert at 0.5 kg
+  { id: '3', name: 'Unsalted Butter', unit: 'kg', initialStock: 2, costPerUnit: 500, category: 'Raw Materials', threshold: 0.5, dateAdded: '2026-01-03' },
+  // Eggs: 60 pcs, ₹8/pc, alert at 12
+  { id: '4', name: 'Large Eggs', unit: 'pcs', initialStock: 60, costPerUnit: 8, category: 'Raw Materials', threshold: 12, dateAdded: '2026-01-04' },
+  // Milk: 3 l, ₹60/l, alert at 0.5 l
+  { id: '5', name: 'Whole Milk', unit: 'l', initialStock: 3, costPerUnit: 60, category: 'Raw Materials', threshold: 0.5, dateAdded: '2026-01-05' },
+  // Yeast: 500 g, ₹0.80/g (₹800/kg), alert at 50 g
+  { id: '6', name: 'Active Dry Yeast', unit: 'g', initialStock: 500, costPerUnit: 0.80, category: 'Raw Materials', threshold: 50, dateAdded: '2026-01-06' },
+  // Packaging Box: 100 pcs, ₹12/pc, alert at 20
+  { id: '7', name: 'Packaging Box', unit: 'pcs', initialStock: 100, costPerUnit: 12, category: 'Packaging Materials', threshold: 20, dateAdded: '2026-01-07' },
+  // Greaseproof Paper: 200 pcs, ₹0.50/pc, alert at 50
+  { id: '8', name: 'Greaseproof Paper', unit: 'pcs', initialStock: 200, costPerUnit: 0.50, category: 'Packaging Materials', threshold: 50, dateAdded: '2026-01-08' },
 ];
 
 const INITIAL_MENU: MenuItem[] = [
@@ -400,11 +417,11 @@ const INITIAL_MENU: MenuItem[] = [
     name: 'Classic Croissant', 
     sellingPrice: 4.50,
     recipe: [
-      { materialId: '1', amount: 250, unit: 'g' }, // Flour
-      { materialId: '2', amount: 25, unit: 'g' },  // Sugar
-      { materialId: '3', amount: 125, unit: 'g' }, // Butter
-      { materialId: '5', amount: 50, unit: 'ml' },  // Milk
-      { materialId: '6', amount: 7, unit: 'g' },   // Yeast
+      { materialId: '1', amount: 0.25, unit: 'kg' },  // 250g Flour
+      { materialId: '2', amount: 0.025, unit: 'kg' }, // 25g Sugar
+      { materialId: '3', amount: 0.125, unit: 'kg' }, // 125g Butter
+      { materialId: '5', amount: 0.05, unit: 'l' },   // 50ml Milk
+      { materialId: '6', amount: 7, unit: 'g' },      // 7g Yeast
     ] 
   },
   { 
@@ -412,11 +429,11 @@ const INITIAL_MENU: MenuItem[] = [
     name: 'Chocolate Muffin', 
     sellingPrice: 3.75,
     recipe: [
-      { materialId: '1', amount: 200, unit: 'g' },
-      { materialId: '2', amount: 150, unit: 'g' },
-      { materialId: '3', amount: 100, unit: 'g' },
+      { materialId: '1', amount: 0.2, unit: 'kg' },   // 200g Flour
+      { materialId: '2', amount: 0.15, unit: 'kg' },  // 150g Sugar
+      { materialId: '3', amount: 0.1, unit: 'kg' },   // 100g Butter
       { materialId: '4', amount: 2, unit: 'pcs' },
-      { materialId: '5', amount: 100, unit: 'ml' },
+      { materialId: '5', amount: 0.1, unit: 'l' },    // 100ml Milk
     ] 
   }
 ];
@@ -3327,9 +3344,26 @@ function BakeryApp() {
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                <select 
+                                <select
                                   value={mat.unit || 'g'}
-                                  onChange={(e) => updateMaterial(mat.id, 'unit', e.target.value)}
+                                  onChange={(e) => {
+                                    const fromUnit = mat.unit || 'g';
+                                    const toUnit = e.target.value;
+                                    if (fromUnit === toUnit) return;
+                                    const factor = UNIT_CONVERSIONS[fromUnit]?.[toUnit];
+                                    if (factor !== undefined) {
+                                      // Convert stock quantity: e.g. 10000 g * 0.001 = 10 kg
+                                      const newStock = parseFloat((mat.initialStock * factor).toFixed(6));
+                                      // Cost per unit inverts: e.g. 0.045/g / 0.001 = 45/kg
+                                      const newCost = parseFloat((mat.costPerUnit / factor).toFixed(4));
+                                      updateMaterial(mat.id, 'unit', toUnit);
+                                      updateMaterial(mat.id, 'initialStock', newStock);
+                                      updateMaterial(mat.id, 'costPerUnit', newCost);
+                                    } else {
+                                      // Incompatible unit family (e.g. kg to pcs): only relabel
+                                      updateMaterial(mat.id, 'unit', toUnit);
+                                    }
+                                  }}
                                   className="bg-stone-100/50 border-none rounded-lg px-2 py-1 text-[10px] font-bold text-stone-500 focus:ring-2 focus:ring-primary/20 uppercase tracking-wider"
                                 >
                                   <option value="g">g</option>
@@ -3366,7 +3400,7 @@ function BakeryApp() {
                                   <input 
                                     type="number" 
                                     step="0.01"
-                                    value={mat.costPerUnit != null ? Number(mat.costPerUnit.toFixed(2)) : 0}
+                                    value={mat.costPerUnit != null ? +(mat.costPerUnit.toPrecision(4)) : 0}
                                     onChange={(e) => updateMaterial(mat.id, 'costPerUnit', parseFloat(e.target.value) || 0)}
                                     className="w-24 bg-stone-50/50 border border-stone-100 rounded-xl px-3 py-1.5 text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                   />
