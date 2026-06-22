@@ -801,15 +801,15 @@ function BakeryApp() {
 
     // 5. Production Runs
     const productionRunsToSeed = [
-      { id: 'run_1', recipeId: 'menu_croissant', quantityProduced: 30, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 30 * 1.53, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
-      { id: 'run_2', recipeId: 'menu_muffin', quantityProduced: 30, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 30 * 1.60, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
-      { id: 'run_3', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 15 * 1.50, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
-      { id: 'run_4', recipeId: 'menu_croissant', quantityProduced: 20, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 20 * 1.53, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      { id: 'run_5', recipeId: 'menu_muffin', quantityProduced: 20, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 20 * 1.60, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      { id: 'run_6', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 15 * 1.50, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      { id: 'run_7', recipeId: 'menu_croissant', quantityProduced: 25, date: getPastDateStr(1), purpose: 'customer_order', costTotal: 25 * 1.53, createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000 },
-      { id: 'run_8', recipeId: 'menu_muffin', quantityProduced: 25, date: getPastDateStr(2), purpose: 'market_stock', costTotal: 25 * 1.60, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
-      { id: 'run_9', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(2), purpose: 'market_stock', costTotal: 15 * 1.50, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 }
+      { id: 'run_1', recipeId: 'menu_croissant', quantityProduced: 30, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 30 * 83.40, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
+      { id: 'run_2', recipeId: 'menu_muffin', quantityProduced: 30, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 30 * 87.30, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
+      { id: 'run_3', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(6), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 6 * 24 * 60 * 60 * 1000 },
+      { id: 'run_4', recipeId: 'menu_croissant', quantityProduced: 20, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 20 * 83.40, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_5', recipeId: 'menu_muffin', quantityProduced: 20, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 20 * 87.30, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_6', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(4), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+      { id: 'run_7', recipeId: 'menu_croissant', quantityProduced: 25, date: getPastDateStr(1), purpose: 'customer_order', costTotal: 25 * 83.40, createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000 },
+      { id: 'run_8', recipeId: 'menu_muffin', quantityProduced: 25, date: getPastDateStr(2), purpose: 'market_stock', costTotal: 25 * 87.30, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
+      { id: 'run_9', recipeId: 'menu_sourdough', quantityProduced: 15, date: getPastDateStr(2), purpose: 'market_stock', costTotal: 15 * 60.00, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000 }
     ];
 
     // 6. Recipe R&D Session (Experiments)
@@ -3379,11 +3379,15 @@ function BakeryApp() {
                                       const newStock = parseFloat((mat.initialStock * factor).toFixed(6));
                                       // Cost inverts: e.g. 45/kg / 1000 = 0.045/g
                                       const newCost = parseFloat((mat.costPerUnit / factor).toFixed(6));
+                                      // Threshold also converts like stock
+                                      const newThreshold = mat.threshold !== undefined ? parseFloat((mat.threshold * factor).toFixed(6)) : undefined;
+                                      
                                       // Single atomic write — no race condition
                                       patchMaterial(mat.id, {
                                         unit: toUnit,
                                         initialStock: newStock,
                                         costPerUnit: newCost,
+                                        ...(newThreshold !== undefined && { threshold: newThreshold })
                                       });
                                     } else {
                                       // Incompatible unit family (e.g. kg to pcs): only relabel
