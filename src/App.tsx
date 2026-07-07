@@ -3243,35 +3243,76 @@ function BakeryApp() {
             </div>
             
             <div className="flex items-center gap-2 sm:gap-6 min-w-0 shrink">
-              {expiredBatches.length > 0 && !isExpiredAlertDismissed && (
-                <button 
-                  onClick={() => {
-                    setActiveTab('menu');
-                    setIsExpiredAlertDismissed(true);
-                  }}
-                  className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group shrink-0"
-                  title={`${expiredBatches.length} expired batches`}
-                >
-                  <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
-                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                    {expiredBatches.length}
-                  </span>
-                </button>
+                            {expiredBatches.length > 0 && !isExpiredAlertDismissed && (
+                <div className="relative group shrink-0 z-50">
+                  <button 
+                    className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5"
+                  >
+                    <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
+                    <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                      {expiredBatches.length}
+                    </span>
+                  </button>
+                  <div className="absolute top-full right-0 sm:-left-32 mt-2 w-64 bg-white border border-stone-200 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto origin-top-right sm:origin-top scale-95 group-hover:scale-100">
+                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-stone-100">
+                      <span className="text-xs font-bold text-rose-600">Expired Batches</span>
+                      <button onClick={() => setIsExpiredAlertDismissed(true)} className="text-[10px] text-stone-400 hover:text-stone-600">Dismiss</button>
+                    </div>
+                    <ul className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                      {expiredBatches.map(batch => {
+                        const recipe = menu.find(m => m.id === batch.recipeId);
+                        return (
+                          <li key={batch.id} className="flex justify-between items-center text-xs">
+                            <span className="font-bold text-stone-700 truncate pr-2">{recipe?.name || 'Unknown'}</span>
+                            <span className="text-rose-500 font-medium whitespace-nowrap bg-rose-50 px-1.5 py-0.5 rounded">
+                              Qty: {batch.remainingQuantity}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <button 
+                      onClick={() => setActiveTab('menu')}
+                      className="mt-3 w-full block text-[10px] font-bold text-primary uppercase tracking-widest hover:text-primary-dark transition-colors text-center"
+                    >
+                      View & Discard
+                    </button>
+                  </div>
+                </div>
               )}
               {lowStockItems.length > 0 && !isAlertDismissed && (
-                <button 
-                  onClick={() => {
-                    setActiveTab('inventory');
-                    setIsAlertDismissed(true);
-                  }}
-                  className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5 group shrink-0"
-                  title={`${lowStockItems.length} items low on stock`}
-                >
-                  <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
-                  <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                    {lowStockItems.length}
-                  </span>
-                </button>
+                <div className="relative group shrink-0 z-50">
+                  <button 
+                    className="relative p-2 sm:p-2.5 text-rose-500 bg-rose-50 rounded-xl hover:bg-rose-100 transition-all shadow-sm shadow-rose-500/5"
+                  >
+                    <AlertCircle size={20} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
+                    <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                      {lowStockItems.length}
+                    </span>
+                  </button>
+                  <div className="absolute top-full right-0 sm:-left-32 mt-2 w-64 bg-white border border-stone-200 shadow-xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto origin-top-right sm:origin-top scale-95 group-hover:scale-100">
+                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-stone-100">
+                      <span className="text-xs font-bold text-rose-600">Low Stock Alerts</span>
+                      <button onClick={() => setIsAlertDismissed(true)} className="text-[10px] text-stone-400 hover:text-stone-600">Dismiss</button>
+                    </div>
+                    <ul className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                      {lowStockItems.map(item => (
+                        <li key={item.id} className="flex justify-between items-center text-xs">
+                          <span className="font-bold text-stone-700 truncate pr-2">{item.name}</span>
+                          <span className="text-rose-500 font-medium whitespace-nowrap bg-rose-50 px-1.5 py-0.5 rounded">
+                            {item.initialStock} {item.unit}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button 
+                      onClick={() => setActiveTab('inventory')}
+                      className="mt-3 w-full block text-[10px] font-bold text-primary uppercase tracking-widest hover:text-primary-dark transition-colors text-center"
+                    >
+                      View Inventory
+                    </button>
+                  </div>
+                </div>
               )}
 
               <div className="flex items-center gap-2 sm:gap-4">
