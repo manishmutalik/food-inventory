@@ -3272,7 +3272,8 @@ function BakeryApp() {
                       })}
                     </ul>
                     <button 
-                      onClick={() => setActiveTab('menu')}
+                      onMouseDown={() => { setActiveTab('menu'); setIsExpiredAlertDismissed(true); }}
+                      onClick={() => { setActiveTab('menu'); setIsExpiredAlertDismissed(true); }}
                       className="mt-3 w-full block text-[10px] font-bold text-primary uppercase tracking-widest hover:text-primary-dark transition-colors text-center"
                     >
                       View & Discard
@@ -3306,7 +3307,8 @@ function BakeryApp() {
                       ))}
                     </ul>
                     <button 
-                      onClick={() => setActiveTab('inventory')}
+                      onMouseDown={() => { setActiveTab('inventory'); setIsAlertDismissed(true); }}
+                      onClick={() => { setActiveTab('inventory'); setIsAlertDismissed(true); }}
                       className="mt-3 w-full block text-[10px] font-bold text-primary uppercase tracking-widest hover:text-primary-dark transition-colors text-center"
                     >
                       View Inventory
