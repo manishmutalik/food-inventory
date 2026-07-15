@@ -5208,6 +5208,7 @@ function BakeryApp() {
                         <tr>
                           <th className="px-6 py-4 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Date</th>
                           <th className="px-6 py-4 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Recipe</th>
+                          <th className="px-6 py-4 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Expiry</th>
                           <th className="px-6 py-4 text-left text-[10px] font-bold text-stone-400 uppercase tracking-widest">Purpose</th>
                           <th className="px-6 py-4 text-right text-[10px] font-bold text-stone-400 uppercase tracking-widest">Produced</th>
                           <th className="px-6 py-4 text-right text-[10px] font-bold text-stone-400 uppercase tracking-widest">Sellable</th>
@@ -5224,6 +5225,7 @@ function BakeryApp() {
                             <tr key={run.id} className="hover:bg-stone-50/50 transition-colors">
                               <td className="px-6 py-4 text-sm text-stone-600">{new Date(run.date).toLocaleDateString()}</td>
                               <td className="px-6 py-4 text-sm font-bold text-stone-800">{recipe?.name || 'Unknown'}</td>
+                              <td className="px-6 py-4 text-sm text-stone-600">{run.expiryDate ? new Date(run.expiryDate).toLocaleDateString() : '-'}</td>
                               <td className="px-6 py-4">
                                 <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${PURPOSE_COLORS[run.purpose] || 'bg-stone-100 text-stone-600'}`}>
                                   {PURPOSE_LABELS[run.purpose] || run.purpose}
